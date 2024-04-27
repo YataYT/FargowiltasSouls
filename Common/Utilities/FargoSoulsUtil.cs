@@ -662,6 +662,7 @@ namespace FargowiltasSouls //lets everything access it without using
 
         public static bool AprilFools => DateTime.Today.Month == 4 && DateTime.Today.Day <= 7;
         public static string TryAprilFoolsTexture => AprilFools ? "_April" : "";
+        public static string TryAprilFoolsTexturePath => AprilFools ? "TextureAlts/" : "";
 
 
         #region npcloot

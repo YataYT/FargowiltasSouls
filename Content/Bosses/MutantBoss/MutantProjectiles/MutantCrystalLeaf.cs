@@ -1,7 +1,5 @@
-﻿using FargowiltasSouls.Content.Bosses.MutantBoss;
-using FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles;
+﻿using FargowiltasSouls.Content.Buffs.Boss;
 using FargowiltasSouls.Content.Buffs.Masomode;
-using FargowiltasSouls.Core;
 using FargowiltasSouls.Core.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -10,44 +8,49 @@ using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 
-namespace FargowiltasSouls.Content.Projectiles.Masomode
+namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
 {
-    public class PlanteraCrystalLeafRing : MutantCrystalLeaf
+    public class MutantCrystalLeaf : ModProjectile
     {
-        public override string Texture => "Terraria/Images/Projectile_226";
+        public override string Texture => FargoSoulsUtil.AprilFools ?
+            "FargowiltasSouls/Content/Bosses/MutantBoss/TextureAlts/MutantCrystalLeaf_April"
+            : "Terraria/Images/Projectile_226";
+
+        public override void SetStaticDefaults()
+        {
+            // DisplayName.SetDefault("Crystal Leaf");
+            ProjectileID.Sets.TrailCacheLength[Projectile.type] = 12;
+            ProjectileID.Sets.TrailingMode[Projectile.type] = 2;
+        }
 
         public override void SetDefaults()
         {
-            base.SetDefaults();
-            Projectile.scale = 1.5f;
-            CooldownSlot = -1;
-            Projectile.FargoSouls().DeletionImmuneRank = 1;
+            Projectile.width = 20;
+            Projectile.height = 20;
+            Projectile.ignoreWater = true;
+            Projectile.tileCollide = false;
+            Projectile.hostile = true;
+            Projectile.timeLeft = 900;
+            Projectile.aiStyle = -1;
+            Projectile.scale = 2.5f;
+            CooldownSlot = 1;
         }
 
         public override void AI()
         {
-            bool recolor = SoulConfig.Instance.BossRecolors && WorldSavingSystem.EternityMode;
             if (++Projectile.localAI[0] == 0)
             {
-
                 for (int index1 = 0; index1 < 30; ++index1)
                 {
-                    int dustID = recolor ?
-                        (Main.rand.NextBool() ? DustID.GlowingMushroom : DustID.MushroomTorch) :
-                        (Main.rand.NextBool() ? DustID.TerraBlade : DustID.ChlorophyteWeapon);
-                    Vector2 vel = Main.rand.NextVector2Circular(4, 4);
-                    int index2 = Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, dustID, vel.X, vel.Y, 0, new Color(), 2f);
+                    int index2 = Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, DustID.ChlorophyteWeapon, 0f, 0f, 0, new Color(), 2f);
                     Main.dust[index2].noGravity = true;
                     Main.dust[index2].velocity *= 5f;
                 }
             }
-            if (recolor)
-                Lighting.AddLight(Projectile.Center, 25f / 255, 47f / 255, 64f / 255);
-            else
-                Lighting.AddLight(Projectile.Center, 0.1f, 0.4f, 0.2f);
 
+            Lighting.AddLight(Projectile.Center, 0.1f, 0.4f, 0.2f);
             Projectile.scale = (Main.mouseTextColor / 200f - 0.35f) * 0.2f + 0.95f;
-            Projectile.scale *= 1.5f;
+            Projectile.scale *= 2.5f;
 
             int byIdentity = FargoSoulsUtil.GetProjectileByIdentity(Projectile.owner, (int)Projectile.ai[0], ModContent.ProjectileType<MutantMark2>());
             if (byIdentity != -1)
@@ -56,32 +59,38 @@ namespace FargowiltasSouls.Content.Projectiles.Masomode
                 Projectile.Center = Main.projectile[byIdentity].Center + offset;
 
                 Projectile.localAI[1] = Math.Max(0, 150 - Main.projectile[byIdentity].ai[1]) / 150; //rampup
+                Projectile.ai[1] += 0.15f * Projectile.localAI[1];
+
                 if (Projectile.localAI[1] > 1f) //clamp it for use in draw
                     Projectile.localAI[1] = 1f;
-                Projectile.ai[1] += 0.15f * Projectile.localAI[1];
             }
 
             Projectile.rotation = Projectile.ai[1] + (float)Math.PI / 2f;
-
-            if (Projectile.localAI[0] > 20)
-            {
-                Projectile.localAI[0] = 1;
-                NPC plantera = FargoSoulsUtil.NPCExists(NPC.plantBoss, NPCID.Plantera);
-                if (plantera != null && Projectile.Distance(plantera.Center) < 1600f && FargoSoulsUtil.HostCheck)
-                    Projectile.NewProjectile(Terraria.Entity.InheritSource(Projectile), Projectile.Center, 4f * Projectile.ai[1].ToRotationVector2(), ModContent.ProjectileType<CrystalLeafShot>(), Projectile.damage, Projectile.knockBack, Projectile.owner, ai0: plantera.whoAmI);
-            }
         }
 
         public override void OnHitPlayer(Player target, Player.HurtInfo info)
         {
-            target.AddBuff(ModContent.BuffType<IvyVenomBuff>(), 240);
+            target.AddBuff(BuffID.Poisoned, Main.rand.Next(60, 300));
+            if (WorldSavingSystem.EternityMode)
+            {
+                target.AddBuff(ModContent.BuffType<InfestedBuff>(), Main.rand.Next(60, 300));
+                target.AddBuff(ModContent.BuffType<IvyVenomBuff>(), Main.rand.Next(60, 300));
+                target.AddBuff(ModContent.BuffType<MutantFangBuff>(), 180);
+            }
+        }
+
+        public override Color? GetAlpha(Color drawColor)
+        {
+            float num4 = Main.mouseTextColor / 200f - 0.3f;
+            int num5 = (int)(byte.MaxValue * num4) + 50;
+            if (num5 > byte.MaxValue)
+                num5 = byte.MaxValue;
+            return new Color(num5, num5, num5, 200);
         }
 
         public override bool PreDraw(ref Color lightColor)
         {
-            bool recolor = SoulConfig.Instance.BossRecolors && WorldSavingSystem.EternityMode;
-            Texture2D texture2D13 = recolor ? ModContent.Request<Texture2D>("FargowiltasSouls/Content/NPCs/EternityModeNPCs/CrystalLeaf").Value : Terraria.GameContent.TextureAssets.Projectile[Type].Value;
-
+            Texture2D texture2D13 = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value;
             int num156 = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value.Height / Main.projFrames[Projectile.type]; //ypos of lower right corner of sprite to draw
             int y3 = num156 * Projectile.frame; //ypos of upper left corner of sprite to draw
             Rectangle rectangle = new(0, y3, texture2D13.Width, num156);

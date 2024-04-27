@@ -5,7 +5,7 @@ namespace FargowiltasSouls.Content.Projectiles.Masomode
 {
     public class SlimeSpike2 : SlimeSpike
     {
-        public override string Texture => "FargowiltasSouls/Content/Bosses/MutantBoss/MutantSlimeBall_3";
+        public override string Texture => "FargowiltasSouls/Content/Bosses/MutantBoss/MutantProjectiles/MutantSlimeBall_3";
 
         public override void SetStaticDefaults()
         {
