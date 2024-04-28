@@ -44,15 +44,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             {
                 Projectile.velocity = -Vector2.UnitY;
             }
-            /*if (Main.npc[(int)Projectile.ai[1]].active && Main.npc[(int)Projectile.ai[1]].type == ModContent.NPCType<Bosses.MutantBoss.MutantBoss>())
-            {
-                Projectile.Center = Main.npc[(int)Projectile.ai[1]].Center;
-            }
-            else
-            {
-                Projectile.Kill();
-                return;
-            }*/
+
             if (Projectile.velocity.HasNaNs() || Projectile.velocity == Vector2.Zero)
             {
                 Projectile.velocity = -Vector2.UnitY;

@@ -104,7 +104,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
         public override bool PreDraw(ref Color lightColor)
         {
-            Texture2D tex = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value;
+            Texture2D tex = ModContent.Request<Texture2D>(Texture).Value;
             int frameHeight = tex.Height / Main.projFrames[Projectile.type];
             Rectangle rect = new(0, frameHeight * Projectile.frame, tex.Width, frameHeight);
 
@@ -114,7 +114,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 float afterimageRatio = (trailCacheLength - i) / trailCacheLength;
                 Color afterimageColor = Color.White * Projectile.Opacity * afterimageRatio;
                 float scale = Projectile.scale * afterimageRatio;
-                Main.spriteBatch.Draw(tex, Projectile.oldPos[i] + Projectile.Size / 2f - Main.screenPosition, rect, afterimageColor, Projectile.oldRot[i], rect.Size() / 2f, Projectile.scale, SpriteEffects.None, 0f);
+                Main.spriteBatch.Draw(tex, Projectile.oldPos[i] + Projectile.Size / 2f - Main.screenPosition, rect, afterimageColor, Projectile.oldRot[i], rect.Size() / 2f, scale, SpriteEffects.None, 0f);
             }
 
             Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, rect, Color.White * Projectile.Opacity, Projectile.rotation, rect.Size() / 2f, Projectile.scale, SpriteEffects.None, 0);

@@ -54,7 +54,6 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
                 }
             }
 
-            scaletimer++;
         }
 
         public override void OnKill(int timeLeft)

@@ -184,7 +184,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 AttackTimer++;
 
             // DEBUG AREA
-            CurrentPhase = 1;
+            CurrentPhase = 0;
         }
 
         public override void OnHitPlayer(Player target, Player.HurtInfo hurtInfo) {

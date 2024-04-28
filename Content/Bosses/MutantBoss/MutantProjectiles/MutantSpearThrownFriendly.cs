@@ -1,4 +1,5 @@
 ﻿using FargowiltasSouls.Content.Projectiles.BossWeapons;
+using Terraria.ModLoader;
 
 namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
 {
@@ -9,7 +10,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
         public override void SetDefaults()
         {
             base.SetDefaults();
-            Projectile.DamageType = Terraria.ModLoader.DamageClass.Default;
+            Projectile.DamageType = DamageClass.Default;
         }
     }
 }

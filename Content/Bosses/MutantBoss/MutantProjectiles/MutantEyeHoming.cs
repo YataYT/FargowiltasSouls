@@ -36,6 +36,8 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
         public override void AI()
         {
+            NPC mutant = FargoSoulsUtil.NPCExists(EModeGlobalNPC.mutantBoss, ModContent.NPCType<MutantBoss>());
+
             int endHomingTime = -600;
             float maxSpeed = WorldSavingSystem.MasochistModeReal ? 15f : 10f;
 

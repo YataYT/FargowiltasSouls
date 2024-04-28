@@ -16,17 +16,21 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 {
     public partial class MutantBoss : ModNPC
     {
+
+
         [AutoloadAsBehavior<EntityAIState<BehaviorStates>, BehaviorStates>(BehaviorStates.SpearTossPredictive)]
         public void SpearTossPredictive()
         {
-            ref float maxThrownSpears = ref AI3;
-            ref float spearsThrown = ref AI2;
             ref float spearThrowTimer = ref AI1;
+            ref float spearsThrown = ref AI2;
+            ref float maxThrownSpears = ref AI3;
             ref float currentSpearAimRotation = ref LAI0;
+            ref float endTime = ref LAI1;
 
             float spearTrackTime = 85;              // Time to track the player before throwing spear
             float spearThrowBufferTime = 5;         // Amount of time to stop tracking the player before the throw
             float windUpTime = 60;                  // The amount of extra time at the start of the attack
+            float trackingStrength = 30;
 
             // Update values for P2
             if (CurrentPhase == 1) {
@@ -56,10 +60,10 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
             // Track player until right before throw
             if (spearThrowTimer < windUpTime + spearTrackTime)
-                currentSpearAimRotation = NPC.DirectionTo(Player.Center + Player.velocity * 30f).ToRotation();
+                currentSpearAimRotation = NPC.DirectionTo(Player.Center + Player.velocity * trackingStrength).ToRotation();
 
             // Throw spear
-            if (spearThrowTimer > windUpTime + spearTrackTime + spearThrowBufferTime) {
+            if (spearThrowTimer > windUpTime + spearTrackTime + spearThrowBufferTime && spearsThrown < maxThrownSpears) {
                 spearsThrown++;
                 spearThrowTimer = windUpTime;
 
@@ -76,6 +80,19 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 currentSpearAimRotation = 0;
                 NPC.netUpdate = true;
             }
+            
+            // Set the end time after all spears have been thrown
+            if (spearsThrown == maxThrownSpears && endTime == 0)
+                endTime = AttackTimer + spearTrackTime;
+
+            // Spawn aim telegraphs
+            if (spearThrowTimer == windUpTime + 1 && (spearsThrown < maxThrownSpears || MasochistMode) && HostCheck)
+            {
+                Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, NPC.SafeDirectionTo(Player.Center + Player.velocity * 30f), ModContent.ProjectileType<MutantDeathrayAim>(), 0, 0f, Main.myPlayer, NPC.whoAmI, trackingStrength, spearTrackTime);
+                Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Zero, ModContent.ProjectileType<MutantSpearAim>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), 0f, Main.myPlayer, NPC.whoAmI, trackingStrength, spearTrackTime);
+            }
+
+             spearThrowTimer++;
         }
     }
 }
