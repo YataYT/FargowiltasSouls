@@ -62,7 +62,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             });
 
             // Spear Toss Predictive
-            StateMachine.RegisterTransition(BehaviorStates.SpearTossPredictive, null, false, () => AttackTimer > LAI1 && AI2 == AI3);
+            StateMachine.RegisterTransition(BehaviorStates.SpearTossPredictiveWithDestroyers, null, false, () => AttackTimer > LAI1 && AI2 == AI3);
 
             // Void Rays
             StateMachine.RegisterTransition(BehaviorStates.VoidRays, null, false, () => AttackTimer == 360);
@@ -77,7 +77,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             StateMachine.RegisterTransition(BehaviorStates.TrueEyeDive, null, false, () => AttackTimer == 360);
 
             // Spawn Destroyers
-            StateMachine.RegisterTransition(BehaviorStates.SpawnDestroyers, null, false, () => AttackTimer == 360);
+            StateMachine.RegisterTransition(BehaviorStates.SpawnDestroyers, null, false, () => LAI3 == -1);
 
             // Spear Toss Direct
             StateMachine.RegisterTransition(BehaviorStates.SpearTossDirect, null, false, () => AttackTimer == 360);
@@ -142,7 +142,8 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 StateMachine.StateStack.Clear();
 
                 StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.SpearDashDirect]);
-                StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.SpearTossPredictive]);
+                StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.SpearTossPredictiveWithDestroyers]);
+                //StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.SpawnDestroyers]);
                 return;
 
                 // Get the correct attack list, and remove the last attack used

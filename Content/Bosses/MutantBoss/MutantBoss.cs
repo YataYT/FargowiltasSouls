@@ -33,7 +33,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             BoundaryBulletHell,             // Stage 2 Done
 
             // Phase 1 + 2 attacks
-            SpearTossPredictive,            // Stage 2 Done
+            SpearTossPredictiveWithDestroyers,            // Stage 2 Done
             SpearDashDirect,                // Pending
             TrueEyeDive,                    // Stage 2 Done
             MutantSword,                    // Pending
@@ -72,7 +72,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             BehaviorStates.VoidRays,
             BehaviorStates.OkuuSpheres,
             BehaviorStates.BoundaryBulletHell,
-            BehaviorStates.SpearTossPredictive,
+            BehaviorStates.SpearTossPredictiveWithDestroyers,
             //BehaviorStates.SpearDashDirect,
             BehaviorStates.TrueEyeDive,
             //BehaviorStates.MutantSword
@@ -83,7 +83,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             BehaviorStates.VoidRays,
             BehaviorStates.OkuuSpheres,
             BehaviorStates.BoundaryBulletHell,
-            BehaviorStates.SpearTossPredictive,
+            BehaviorStates.SpearTossPredictiveWithDestroyers,
             //BehaviorStates.SpearDashDirect,
             BehaviorStates.TrueEyeDive,
             //BehaviorStates.MutantSword,

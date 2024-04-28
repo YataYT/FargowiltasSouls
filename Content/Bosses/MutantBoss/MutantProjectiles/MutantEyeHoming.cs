@@ -4,7 +4,9 @@ using Microsoft.Xna.Framework;
 using System;
 using System.Linq;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ModLoader;
+using UtfUnknown.Core.Models.SingleByte.Finnish;
 
 namespace FargowiltasSouls.Content.Bosses.MutantBoss
 {
@@ -20,6 +22,13 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             Projectile.timeLeft = 900;
         }
 
+        public override void OnSpawn(IEntitySource source)
+        {
+            // Makes setting AI2 optional
+            if (SpeedBonus == 0)
+                SpeedBonus = 1;
+        }
+
         /*public ref float AI0 => ref Projectile.ai[0];
         public ref float AI1 => ref Projectile.ai[1];
         public ref float AI2 => ref Projectile.ai[2];
@@ -27,87 +36,67 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         public ref float LAI1 => ref Projectile.localAI[1];
         public ref float LAI2 => ref Projectile.localAI[2];*/
 
-        public ref float AI0 => ref Projectile.ai[0];
-        public ref float AI1 => ref Projectile.ai[1];
-        public ref float AI2 => ref Projectile.ai[2];
-        public ref float LAI0 => ref Projectile.localAI[0];
-        public ref float LAI1 => ref Projectile.localAI[1];
-        public ref float LAI2 => ref Projectile.localAI[2];
+        public ref float BackupPlayerTarget => ref Projectile.ai[0];
+        public ref float SpeedBonus => ref Projectile.ai[1];
+        public ref float HomingTimer => ref Projectile.ai[2];
 
         public override void AI()
         {
-            NPC mutant = FargoSoulsUtil.NPCExists(EModeGlobalNPC.mutantBoss, ModContent.NPCType<MutantBoss>());
-
-            int endHomingTime = -600;
             float maxSpeed = WorldSavingSystem.MasochistModeReal ? 15f : 10f;
+            bool stopChasing = false;
+            int endHomingTime = -600;
 
-            bool stopAttacking = false;
+            NPC mutant = FargoSoulsUtil.NPCExists(EModeGlobalNPC.mutantBoss, ModContent.NPCType<MutantBoss>());
+            Player player = FargoSoulsUtil.PlayerExists(mutant == null ? Projectile.ai[0] : mutant.target);
 
-            NPC npc = FargoSoulsUtil.NPCExists(EModeGlobalNPC.mutantBoss, ModContent.NPCType<MutantBoss>());
-            int[] spearSpinAIs = new int[] { 4, 5, 6, 13, 14, 15, 21, 22, 23 };
-            if ((npc == null || !spearSpinAIs.Contains((int)npc.ai[0]))
-                && !(WorldSavingSystem.MasochistModeReal && npc.ai[0] > 10)
-                && !Main.getGoodWorld)
+            // Stop chasing if any of these are true
+            if (mutant is null && !Main.getGoodWorld && !WorldSavingSystem.MasochistModeReal)
             {
-                Projectile.ai[1] = endHomingTime; //for deceleration
-                stopAttacking = true;
+                HomingTimer = endHomingTime;
+                stopChasing = true;
             }
 
-            Projectile.ai[1]--;
-
-            Player p = FargoSoulsUtil.PlayerExists(npc == null ? Projectile.ai[0] : npc.target);
-            if (stopAttacking || Projectile.ai[1] > 0 && p != null && Projectile.Distance(p.Center) < 240)
+            // Fly away?
+            if (stopChasing || HomingTimer < 0 && player is not null && Projectile.Distance(player.Center) < 240)
             {
-                if (p != null)
-                {
-                    double angle = Projectile.DirectionFrom(p.Center).ToRotation() - Projectile.velocity.ToRotation();
-                    if (angle > Math.PI)
-                        angle -= 2.0 * Math.PI;
-                    if (angle < -Math.PI)
-                        angle += 2.0 * Math.PI;
+                float angle = MathHelper.WrapAngle(Projectile.DirectionFrom(player.Center).ToRotation() - Projectile.velocity.ToRotation());
+                Projectile.velocity = Projectile.velocity.RotatedBy(angle * 0.05f);
+            } 
+            // Home in on player
+            else if (HomingTimer < 0 && HomingTimer > endHomingTime && player is not null)
+            {
+                float homingMaxSpeed = maxSpeed * SpeedBonus;
 
-                    Projectile.velocity = Projectile.velocity.RotatedBy(angle * 0.05);
+                if (Projectile.velocity.Length() < homingMaxSpeed)
+                    Projectile.velocity *= 1.02f;
+
+                Vector2 target = player.Center;
+                float deactivateHomingRange = WorldSavingSystem.MasochistModeReal ? 360 : 480;
+                if (Projectile.Distance(target) > deactivateHomingRange)
+                {
+                    Vector2 distance = target - Projectile.Center;
+                    float angle = MathHelper.WrapAngle(distance.ToRotation() - Projectile.velocity.ToRotation());
+                    Projectile.velocity = Projectile.velocity.RotatedBy(angle * 0.1f);
                 }
-
-                if (Projectile.timeLeft > 180)
-                    Projectile.timeLeft = 180;
-            }
-            else if (Projectile.ai[1] < 0 && Projectile.ai[1] > endHomingTime)
-            {
-                if (p != null)
+                // Stop homing
+                else
                 {
-                    float homingMaxSpeed = maxSpeed;
-                    if (npc != null && (npc.ai[0] == 21 || npc.ai[0] == 22 || npc.ai[0] == 23))
-                        homingMaxSpeed *= 2f;
-                    if (Projectile.velocity.Length() < homingMaxSpeed)
-                        Projectile.velocity *= 1.02f;
-
-                    Vector2 target = p.Center;
-                    float deactivateHomingRange = WorldSavingSystem.MasochistModeReal ? 360 : 480;
-                    if (Projectile.Distance(target) > deactivateHomingRange)
-                    {
-                        Vector2 distance = target - Projectile.Center;
-
-                        double angle = distance.ToRotation() - Projectile.velocity.ToRotation();
-                        if (angle > Math.PI)
-                            angle -= 2.0 * Math.PI;
-                        if (angle < -Math.PI)
-                            angle += 2.0 * Math.PI;
-
-                        Projectile.velocity = Projectile.velocity.RotatedBy(angle * 0.1);
-                    }
-                    else
-                    {
-                        Projectile.ai[1] = endHomingTime;
-                    }
+                    HomingTimer = endHomingTime;
                 }
             }
 
-            if (Projectile.ai[1] < endHomingTime && !Main.getGoodWorld)
+            if (HomingTimer < endHomingTime && !Main.getGoodWorld)
             {
                 if (Projectile.velocity.Length() > maxSpeed)
                     Projectile.velocity *= 0.96f;
-            }
+
+
+                // Cut down the lifespan
+                if (Projectile.timeLeft > 120)
+                    Projectile.timeLeft = 120;
+            } 
+
+            HomingTimer--;
 
             base.AI();
         }

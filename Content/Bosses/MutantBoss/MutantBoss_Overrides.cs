@@ -7,6 +7,7 @@ using FargowiltasSouls.Content.Items.Materials;
 using FargowiltasSouls.Content.Items.Pets;
 using FargowiltasSouls.Content.Items.Placables.Relics;
 using FargowiltasSouls.Content.Items.Placables.Trophies;
+using FargowiltasSouls.Core.Globals;
 using FargowiltasSouls.Core.ItemDropRules.Conditions;
 using FargowiltasSouls.Core.Systems;
 using Microsoft.Xna.Framework;
@@ -151,6 +152,8 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             if (invalidTarget)
                 NPC.TargetClosest(false);
 
+            EModeGlobalNPC.mutantBoss = NPC.whoAmI;
+
             // Try to find a new target if the current one is very far away.
             if (!NPC.WithinRange(Target.Center, 4600f))
                 NPC.TargetClosest(false);
@@ -184,7 +187,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 AttackTimer++;
 
             // DEBUG AREA
-            CurrentPhase = 0;
+            CurrentPhase = 1;
         }
 
         public override void OnHitPlayer(Player target, Player.HurtInfo hurtInfo) {

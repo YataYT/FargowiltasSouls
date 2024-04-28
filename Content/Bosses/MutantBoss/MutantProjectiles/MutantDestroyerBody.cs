@@ -63,81 +63,76 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
 
         public override bool PreDraw(ref Color lightColor)
         {
-            Texture2D texture2D13 = Projectile.ai[2] == 0
-                ? Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value
-                : ModContent.Request<Texture2D>("FargowiltasSouls/Assets/ExtraTextures/Resprites/NPC_14", AssetRequestMode.ImmediateLoad).Value;
-            int num214 = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value.Height / Main.projFrames[Projectile.type];
-            int y6 = num214 * Projectile.frame;
-            Main.EntitySpriteDraw(texture2D13, Projectile.Center - Main.screenPosition + new Vector2(0f, Projectile.gfxOffY), new Rectangle(0, y6, texture2D13.Width, num214),
-                Projectile.GetAlpha(Color.White), Projectile.rotation, new Vector2(texture2D13.Width / 2f, num214 / 2f), Projectile.scale,
-                Projectile.spriteDirection == 1 ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
+            Texture2D tex = Appearance == 0 ? ModContent.Request<Texture2D>(Texture).Value : ModContent.Request<Texture2D>("FargowiltasSouls/Assets/ExtraTextures/Resprites/NPC_14").Value;
+            SpriteEffects spriteEffects = Projectile.spriteDirection == 1 ? SpriteEffects.None : SpriteEffects.FlipHorizontally;
+            Main.spriteBatch.Draw(tex, Projectile.Center - Main.screenPosition, null, Color.White, Projectile.rotation, tex.Size() / 2f, Projectile.scale, spriteEffects, 0);
+
             return false;
         }
 
+        public ref float PreviousWormIdentity => ref Projectile.ai[0];
+        public ref float AI1 => ref Projectile.ai[1];
+        public ref float Appearance => ref Projectile.ai[2];
+        public ref float WormIndex => ref Projectile.localAI[0];
+        public ref float idk => ref Projectile.localAI[1];
+        public ref float Timer => ref Projectile.localAI[2];
+
         public override void AI()
         {
-            if ((int)Main.time % 120 == 0) Projectile.netUpdate = true;
-
-            int num1038 = 30;
-
-            bool flag67 = false;
-            Vector2 value67 = Vector2.Zero;
-            Vector2 arg_2D865_0 = Vector2.Zero;
-            float num1052 = 0f;
-            if (Projectile.ai[1] == 1f)
-            {
-                Projectile.ai[1] = 0f;
+            if (Timer % 120 == 0)
                 Projectile.netUpdate = true;
-            }
 
-            int byIdentity = FargoSoulsUtil.GetProjectileByIdentity(Projectile.owner, (int)Projectile.ai[0], Projectile.type, ModContent.ProjectileType<MutantDestroyerHead>());
-            if (byIdentity >= 0 && Main.projectile[byIdentity].active)
+            // Identify the segment ahead and extract some info. If there's no segment, perish
+            int identity = FargoSoulsUtil.GetProjectileByIdentity(Projectile.owner, PreviousWormIdentity, Projectile.type, ModContent.ProjectileType<MutantDestroyerHead>());
+            Vector2 nextSegmentPos;
+            float nextSegmentRot;
+            if (identity >= 0 && Main.projectile[identity].active)
             {
-                flag67 = true;
-                value67 = Main.projectile[byIdentity].Center;
-                Vector2 arg_2D957_0 = Main.projectile[byIdentity].velocity;
-                num1052 = Main.projectile[byIdentity].rotation;
-                float num1053 = MathHelper.Clamp(Main.projectile[byIdentity].scale, 0f, 50f);
-                int arg_2D9AD_0 = Main.projectile[byIdentity].alpha;
-                Main.projectile[byIdentity].localAI[0] = Projectile.localAI[0] + 1f;
-                if (Main.projectile[byIdentity].type != ModContent.ProjectileType<MutantDestroyerHead>()) Main.projectile[byIdentity].localAI[1] = Projectile.identity;
-                Projectile.timeLeft = Main.projectile[byIdentity].timeLeft;
+                nextSegmentPos = Main.projectile[identity].Center;
+                nextSegmentRot = Main.projectile[identity].rotation;
+                Main.projectile[identity].localAI[0] = WormIndex + 1;
+                Projectile.timeLeft = Main.projectile[identity].timeLeft;
+
+                if (Main.projectile[identity].type != ModContent.ProjectileType<MutantDestroyerHead>())
+                    Main.projectile[identity].localAI[1] = Projectile.identity;
+            }
+            else
+            {
+                Projectile.Kill();
+                return;
             }
 
-            if (!flag67) return;
+            // Fade in
+            Projectile.alpha = (int)MathHelper.Lerp(255f, 0f, Timer / 12f);
 
-            Projectile.alpha -= 42;
-            if (Projectile.alpha < 0) Projectile.alpha = 0;
+            // Adjust the tail position to be right before the other destroyer
             Projectile.velocity = Vector2.Zero;
-            Vector2 vector134 = value67 - Projectile.Center;
-            if (num1052 != Projectile.rotation)
-            {
-                float num1056 = MathHelper.WrapAngle(num1052 - Projectile.rotation);
-                vector134 = vector134.RotatedBy(num1056 * 0.1f, default);
-            }
-
-            Projectile.rotation = vector134.ToRotation() + 1.57079637f;
+            float angle = MathHelper.WrapAngle(nextSegmentRot - Projectile.rotation);
+            Vector2 tailPos = (nextSegmentPos - Projectile.Center).RotatedBy(angle * 0.1f);
+            Projectile.rotation = tailPos.ToRotation() + MathHelper.PiOver2;
             Projectile.position = Projectile.Center;
-            Projectile.width = Projectile.height = (int)(num1038 * Projectile.scale);
+            Projectile.width = Projectile.height = (int)(30 * Projectile.scale);
             Projectile.Center = Projectile.position;
-            if (vector134 != Vector2.Zero) Projectile.Center = value67 - Vector2.Normalize(vector134) * 36;
-            Projectile.spriteDirection = vector134.X > 0f ? 1 : -1;
+            Projectile.spriteDirection = tailPos.X > 0f ? 1 : -1;
+            if (nextSegmentPos != Vector2.Zero)
+                Projectile.Center = nextSegmentPos - tailPos.SafeNormalize(Vector2.UnitX) * 36;
+
+            Timer++;
         }
 
         public override void OnKill(int timeLeft)
         {
-            for (int i = 0; i < 20; i++)
+            for (int i = 0; i < 40; i++)
             {
-                int dust = Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, DustID.PurpleTorch, -Projectile.velocity.X * 0.2f,
-                    -Projectile.velocity.Y * 0.2f, 100, default, 2f);
-                Main.dust[dust].noGravity = true;
-                Main.dust[dust].velocity *= 2f;
-                dust = Dust.NewDust(Projectile.Center, Projectile.width, Projectile.height, DustID.RedTorch, -Projectile.velocity.X * 0.2f,
-                    -Projectile.velocity.Y * 0.2f, 100);
-                Main.dust[dust].velocity *= 2f;
+                int d = Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, Main.rand.NextBool() ? DustID.PurpleTorch : DustID.RedTorch,
+                    -Projectile.velocity.X * 0.2f, -Projectile.velocity.Y * 0.2f, 100, Scale: Main.rand.NextFloat(1f, 2f));
+                Main.dust[d].noGravity = Main.rand.NextBool();
+                Main.dust[d].velocity *= 2f;
             }
+
             if (!Main.dedServ)
             {
+                // 156 is Destroyer gore, 25 is EoW gore
                 int g = Gore.NewGore(Projectile.GetSource_FromThis(), Projectile.Center, Projectile.velocity / 2,
                     Projectile.ai[2] == 0 ? 156 : 25, Projectile.scale);
                 Main.gore[g].timeLeft = 20;
@@ -146,7 +141,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
 
         public override void OnHitPlayer(Player target, Player.HurtInfo info)
         {
-            target.AddBuff(Projectile.ai[2] == 0 ? ModContent.BuffType<LightningRodBuff>() : BuffID.Weak, Main.rand.Next(300, 1200));
+            target.AddBuff(Appearance == 0 ? ModContent.BuffType<LightningRodBuff>() : BuffID.Weak, Main.rand.Next(300, 1200));
             if (WorldSavingSystem.EternityMode)
                 target.AddBuff(ModContent.BuffType<MutantFangBuff>(), 180);
         }

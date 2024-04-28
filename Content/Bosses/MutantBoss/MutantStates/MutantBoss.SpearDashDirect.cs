@@ -29,6 +29,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             ref float dashTime = ref LAI3;
 
             bool IsPhaseOne = CurrentPhase == 0;
+            int startTime = 240;
 
             // Spawn the spear projectile at the start of the attack
             if (AttackTimer == 1)
@@ -47,12 +48,16 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 dashTime = CurrentPhase == 1 ? 20 : 30;
 
                 if (HostCheck)
-                    Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Zero, ModContent.ProjectileType<MutantSpearSpin>(),
-                        FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), 0f, Main.myPlayer, NPC.whoAmI, 240);
+                {
+                    int mutantEyeDuration = (int)(startTime / 2f + (dashDelay + dashTime) * numDashes);
+                    Projectile proj = Projectile.NewProjectileDirect(NPC.GetSource_FromThis(), NPC.Center, Vector2.Zero, ModContent.ProjectileType<MutantSpearSpin>(),
+                        FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), 0f, Main.myPlayer, NPC.whoAmI, startTime, mutantEyeDuration);
+                    proj.localAI[2] = CurrentPhase;
+                }
             }
 
             // The first few seconds of the attack is the preparation stage, and cuts off the rest of the function until the dashing is ready.
-            if (AttackTimer <= 240)
+            if (AttackTimer <= startTime)
             {
                 Vector2 targetPos = Player.Center;
                 

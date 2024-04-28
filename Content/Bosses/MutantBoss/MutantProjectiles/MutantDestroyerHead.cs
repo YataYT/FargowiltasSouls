@@ -8,6 +8,8 @@ using System.IO;
 using System.Linq;
 using Terraria;
 using Terraria.Audio;
+using Terraria.DataStructures;
+using Terraria.GameContent.UI.Elements;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -18,11 +20,6 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         public override string Texture => FargoSoulsUtil.AprilFools ?
             "FargowiltasSouls/Content/Bosses/MutantBoss/TextureAlts/MutantDestroyerHead_April" :
             "FargowiltasSouls/Assets/ExtraTextures/Resprites/NPC_134";
-
-        public override void SetStaticDefaults()
-        {
-            // DisplayName.SetDefault("The Destroyer");
-        }
 
         public override void SetDefaults()
         {
@@ -50,78 +47,84 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             Projectile.localAI[1] = reader.ReadSingle();
         }
 
-        public override Color? GetAlpha(Color lightColor)
-        {
-            return Color.White;
-        }
-
         public override bool PreDraw(ref Color lightColor)
         {
-            Texture2D texture2D13 = Projectile.ai[2] == 0
-                ? Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value
-                : ModContent.Request<Texture2D>("FargowiltasSouls/Assets/ExtraTextures/Resprites/NPC_13", AssetRequestMode.ImmediateLoad).Value;
-            int num214 = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value.Height / Main.projFrames[Projectile.type];
-            int y6 = num214 * Projectile.frame;
-            Main.EntitySpriteDraw(texture2D13, Projectile.Center - Main.screenPosition + new Vector2(0f, Projectile.gfxOffY), new Rectangle(0, y6, texture2D13.Width, num214),
-                Projectile.GetAlpha(Color.White), Projectile.rotation, new Vector2(texture2D13.Width / 2f, num214 / 2f), Projectile.scale,
-                Projectile.spriteDirection == 1 ? SpriteEffects.None : SpriteEffects.FlipHorizontally, 0);
+            Texture2D tex = Appearance == 0 ? ModContent.Request<Texture2D>(Texture).Value : ModContent.Request<Texture2D>("FargowiltasSouls/Assets/ExtraTextures/Resprites/NPC_13").Value;
+            SpriteEffects spriteEffects = Projectile.spriteDirection == 1 ? SpriteEffects.None : SpriteEffects.FlipHorizontally;
+            Main.spriteBatch.Draw(tex, Projectile.Center - Main.screenPosition, null, Color.White, Projectile.rotation, tex.Size() / 2f, Projectile.scale, spriteEffects, 0);
+
             return false;
         }
+
+        public override void OnSpawn(IEntitySource source)
+        {
+            // Makes setting AI1 optional, since it must be a value above 0
+            if (SpeedMultiplier == 0)
+                SpeedMultiplier = 1f;
+        }
+
+        public ref float PlayerTarget => ref Projectile.ai[0];
+        public ref float SpeedMultiplier => ref Projectile.ai[1];
+        public ref float Appearance => ref Projectile.ai[2];
+        public ref float LAI0 => ref Projectile.localAI[0];
+        public ref float Timer => ref Projectile.localAI[1];
+        public ref float LAI2 => ref Projectile.localAI[2];
 
         public override void AI()
         {
             //keep the head looking right
-            Projectile.rotation = Projectile.velocity.ToRotation() + 1.57079637f;
+            Projectile.rotation = Projectile.velocity.ToRotation() + MathHelper.PiOver2;
             Projectile.spriteDirection = Projectile.velocity.X > 0f ? 1 : -1;
 
-            const int homingDelay = 60;
-            float desiredFlySpeedInPixelsPerFrame = 10 * Projectile.ai[1];
-            float amountOfFramesToLerpBy = 25 / Projectile.ai[1]; // minimum of 1, please keep in full numbers even though it's a float!
+            int homingDelay = 60;
+            float desiredFlySpeedInPixelsPerFrame = 10 * SpeedMultiplier;
+            float amountOfFramesToLerpBy = 25f / SpeedMultiplier; // minimum of 1, please keep in full numbers even though it's a float!
 
-            if (++Projectile.localAI[1] > homingDelay)
+            // Start homing onto the player
+            if (Timer > 60)
             {
-                int foundTarget = (int)Projectile.ai[0];
-                Player p = Main.player[foundTarget];
-                if (Projectile.Distance(p.Center) > 700)
+                Player target = Main.player[(int)PlayerTarget];
+
+                // Accelerate faster if the player is already far away
+                if (Projectile.Distance(target.Center) > 700)
                 {
                     desiredFlySpeedInPixelsPerFrame *= 2;
                     amountOfFramesToLerpBy /= 2;
                 }
-                Vector2 desiredVelocity = Projectile.SafeDirectionTo(p.Center) * desiredFlySpeedInPixelsPerFrame;
+
+                Vector2 desiredVelocity = Projectile.SafeDirectionTo(target.Center) * desiredFlySpeedInPixelsPerFrame;
                 Projectile.velocity = Vector2.Lerp(Projectile.velocity, desiredVelocity, 1f / amountOfFramesToLerpBy);
             }
 
-            const float IdleAccel = 0.05f;
-            foreach (Projectile p in Main.projectile.Where(p => p.active && p.type == Projectile.type && p.whoAmI != Projectile.whoAmI && p.Distance(Projectile.Center) < Projectile.width))
+            float idleAccel = 0.05f;
+            foreach (Projectile proj in Main.projectile.Where(proj => proj.active && proj.type == Projectile.type && proj.whoAmI != Projectile.whoAmI
+            && proj.Distance(Projectile.Center) < Projectile.width))
             {
-                Projectile.velocity.X += IdleAccel * (Projectile.position.X < p.position.X ? -1 : 1);
-                Projectile.velocity.Y += IdleAccel * (Projectile.position.Y < p.position.Y ? -1 : 1);
-                p.velocity.X += IdleAccel * (p.position.X < Projectile.position.X ? -1 : 1);
-                p.velocity.Y += IdleAccel * (p.position.Y < Projectile.position.Y ? -1 : 1);
+                Projectile.velocity += new Vector2(Projectile.position.X < proj.position.X ? -1 : 1, Projectile.position.Y < proj.position.Y ? -1 : 1) * idleAccel;
+                proj.velocity += new Vector2(proj.position.X < Projectile.position.X ? -1 : 1, proj.position.Y < Projectile.position.Y ? -1 : 1) * idleAccel;
             }
+
+            Timer++;
         }
 
         public override void OnHitPlayer(Player target, Player.HurtInfo info)
         {
-            target.AddBuff(Projectile.ai[2] == 0 ? ModContent.BuffType<LightningRodBuff>() : BuffID.Weak, Main.rand.Next(300, 1200));
+            target.AddBuff(Appearance == 0 ? ModContent.BuffType<LightningRodBuff>() : BuffID.Weak, Main.rand.Next(300, 1200));
             if (WorldSavingSystem.EternityMode)
                 target.AddBuff(ModContent.BuffType<MutantFangBuff>(), 180);
         }
 
         public override void OnKill(int timeLeft)
         {
-            for (int i = 0; i < 20; i++)
+            // Dust!!
+            for (int i = 0; i < 40; i++)
             {
-                int dust = Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, DustID.PurpleTorch, -Projectile.velocity.X * 0.2f,
-                    -Projectile.velocity.Y * 0.2f, 100, default, 2f);
-                Main.dust[dust].noGravity = true;
-                Main.dust[dust].velocity *= 2f;
-                dust = Dust.NewDust(Projectile.Center, Projectile.width, Projectile.height, DustID.RedTorch, -Projectile.velocity.X * 0.2f,
-                    -Projectile.velocity.Y * 0.2f, 100);
-                Main.dust[dust].velocity *= 2f;
+                int d = Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, Main.rand.NextBool() ? DustID.PurpleTorch : DustID.RedTorch,
+                    -Projectile.velocity.X * 0.2f, -Projectile.velocity.Y * 0.2f, 100, Scale: Main.rand.NextFloat(1f, 2f));
+                Main.dust[d].noGravity = Main.rand.NextBool();
+                Main.dust[d].velocity *= 2f;
             }
-            //int g = Gore.NewGore(Projectile.Center, Projectile.velocity / 2, mod.GetGoreSlot("Assets/Gores/DestroyerGun/DestroyerHead"), Projectile.scale);
-            // Main.gore[g].timeLeft = 20;
+
             SoundEngine.PlaySound(SoundID.NPCDeath14, Projectile.Center);
         }
     }

@@ -2,6 +2,7 @@
 using FargowiltasSouls.Content.Buffs.Boss;
 using FargowiltasSouls.Content.Buffs.Masomode;
 using FargowiltasSouls.Core.Systems;
+using Microsoft.Win32.SafeHandles;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -17,10 +18,11 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
     {
         public ref float MutantIndex => ref Projectile.ai[0];
         public ref float SpearSpinDuration => ref Projectile.ai[1];
-        public ref float IsPredictive => ref Projectile.ai[2];
+        // Due to lack of AI slots, this variable determines two things. Set to negative to indicate it's predictive. Set the value to how long the homing mutant eye should be alive for.
+        public ref float IsPredictiveAndMutantEyeLifetime => ref Projectile.ai[2];
         public ref float MutantEyeSpawningTimer => ref Projectile.localAI[0];
         public ref float Direction => ref Projectile.localAI[1];
-        public ref float LAI2 => ref Projectile.localAI[2];
+        public ref float CurrentPhase => ref Projectile.localAI[2];
 
         public override string Texture => FargoSoulsUtil.AprilFools ?
             "FargowiltasSouls/Content/Bosses/MutantBoss/TextureAlts/MutantSpear_April" :
@@ -71,9 +73,11 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                         Vector2 speed = Vector2.UnitY.RotatedByRandom(MathHelper.PiOver2) * Main.rand.NextFloat(6f, 9f);
                         if (MutantBoss.Center.Y < Main.player[MutantBoss.target].Center.Y)
                             speed *= -1f;
-                        float ai1 = Projectile.timeLeft + Main.rand.Next(Projectile.timeLeft / 2);
-                        Projectile.NewProjectile(Terraria.Entity.InheritSource(Projectile), Projectile.position + Main.rand.NextVector2Square(0f, Projectile.width),
-                            speed, ModContent.ProjectileType<MutantEyeHoming>(), Projectile.damage, 0f, Projectile.owner, MutantBoss.target, ai1);
+                        float speedBonus = CurrentPhase == 1 ? 2f : 1f;
+                        float homingDelay = Projectile.timeLeft - (Projectile.timeLeft / 2f);
+                        int p = Projectile.NewProjectile(Terraria.Entity.InheritSource(Projectile), Projectile.position + Main.rand.NextVector2Square(0f, Projectile.width),
+                            speed, ModContent.ProjectileType<MutantEyeHoming>(), Projectile.damage, 0f, Projectile.owner, MutantBoss.target, speedBonus, homingDelay);
+                        Main.projectile[p].timeLeft = (int)MathF.Abs(IsPredictiveAndMutantEyeLifetime);
                     }
                 }
 
@@ -122,7 +126,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             Texture2D glow = ModContent.Request<Texture2D>("FargowiltasSouls/Content/Bosses/MutantBoss/MutantProjectiles/MutantSpearAimGlow").Value;
             float modifier = Projectile.timeLeft / SpearSpinDuration;
             Color glowColor = FargoSoulsUtil.AprilFools ? new Color(255, 191, 51, 210) : new(51, 255, 191, 210);
-            if (IsPredictive != 0)
+            if (IsPredictiveAndMutantEyeLifetime < 0)   // If below 0, it follows into a predictive attack
                 glowColor = FargoSoulsUtil.AprilFools ? new Color(255, 0, 0, 210) : new Color(0, 0, 255, 210);
             glowColor *= 1f - modifier;
             float glowScale = Projectile.scale * 8f * modifier;

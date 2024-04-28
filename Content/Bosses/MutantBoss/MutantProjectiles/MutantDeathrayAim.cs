@@ -37,8 +37,13 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
             }
 
             NPC npc = FargoSoulsUtil.NPCExists(MutantIndex, ModContent.NPCType<MutantBoss>());
-            if (npc != null && !npc.dontTakeDamage)
+            if (npc != null && !npc.dontTakeDamage && npc.active)
                 Projectile.Center = npc.Center;
+            else
+            {
+                Projectile.Kill();
+                return;
+            }
 
             Projectile.scale = MathF.Sin(Timer * MathHelper.Pi / Duration) * 0.2f;
             Projectile.velocity = Projectile.velocity.SafeNormalize(Vector2.One);
