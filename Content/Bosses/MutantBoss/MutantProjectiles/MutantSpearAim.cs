@@ -54,16 +54,6 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
             return false;
         }
 
-        /*
-         * -2: direct, green, 3sec for rapid p2 toss
-         * -1: direct, green, 1sec (?)
-         * 0: direct, green, 0.5sec for rapid p2 toss
-         * 1: predictice, blue, 1sec for p2 destroyer throw
-         * 2: predictive, blue, 1.5sec for p1
-         * 3: predictive, blue, 1.5sec with no more tracking after a bit for p2 slow dash finisher (maybe red?)
-         * 4: predictive, NONE, 1sec for p2 slow dash
-         */
-
         public ref float MutantIndex => ref Projectile.ai[0];
         public ref float TrackingStrength => ref Projectile.ai[1];      // Functions to check if the spear aim is predictive by setting it to any value above 0. The non-zero value corresponds to the tracking strength. 
         public ref float SpearAimDuration => ref Projectile.ai[2];

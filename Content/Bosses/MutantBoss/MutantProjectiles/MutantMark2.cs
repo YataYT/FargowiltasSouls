@@ -16,7 +16,6 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
         public override void SetStaticDefaults()
         {
-            // DisplayName.SetDefault("Crystal Leaf");
         }
 
         public override void SetDefaults()

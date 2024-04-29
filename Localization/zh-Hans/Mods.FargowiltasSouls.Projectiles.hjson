@@ -438,6 +438,7 @@ MutantDeathray2.DisplayName: 幻影死亡射线
 MutantDeathray3.DisplayName: 烈焰死亡射线
 MutantDeathrayAim.DisplayName: 幻影死亡射线
 MutantDeathraySmall.DisplayName: 幻影死亡射线
+// MutantDeathray.DisplayName: Mutant Deathray
 MutantDestroyerBody.DisplayName: 毁灭者
 MutantDestroyerHead.DisplayName: 毁灭者
 MutantDestroyerTail.DisplayName: 毁灭者

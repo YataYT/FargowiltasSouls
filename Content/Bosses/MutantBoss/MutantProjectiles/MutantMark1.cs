@@ -83,7 +83,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             Projectile.Center = Projectile.position;
 
             if (FargoSoulsUtil.HostCheck)
-                Projectile.NewProjectile(Terraria.Entity.InheritSource(Projectile), Projectile.Center, Vector2.Normalize(Projectile.velocity), ModContent.ProjectileType<MutantDeathray1>(), Projectile.damage, 0f, Projectile.owner);
+                Projectile.NewProjectile(Terraria.Entity.InheritSource(Projectile), Projectile.Center, Vector2.Normalize(Projectile.velocity), ModContent.ProjectileType<MutantDeathray>(), Projectile.damage, 0f, Projectile.owner);
         }
 
         public override Color? GetAlpha(Color lightColor)
@@ -93,7 +93,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
         public override bool PreDraw(ref Color lightColor)
         {
-            Texture2D glow = ModContent.Request<Texture2D>("FargowiltasSouls/Content/Bosses/MutantBoss/MutantSphereGlow", ReLogic.Content.AssetRequestMode.ImmediateLoad).Value;
+            Texture2D glow = ModContent.Request<Texture2D>("FargowiltasSouls/Content/Bosses/MutantBoss/MutantProjectiles/MutantSphereGlow", ReLogic.Content.AssetRequestMode.ImmediateLoad).Value;
             int rect1 = glow.Height;
             int rect2 = 0;
             Rectangle glowrectangle = new(0, rect2, glow.Width, rect1);

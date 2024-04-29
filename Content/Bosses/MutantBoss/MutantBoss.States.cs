@@ -65,7 +65,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             StateMachine.RegisterTransition(BehaviorStates.SpearTossPredictiveWithDestroyers, null, false, () => AttackTimer > LAI1 && AI2 == AI3);
 
             // Void Rays
-            StateMachine.RegisterTransition(BehaviorStates.VoidRays, null, false, () => AttackTimer == 360);
+            StateMachine.RegisterTransition(BehaviorStates.VoidRays, null, false, () => AI3 >= AI0 && AttackTimer > 3);
 
             // Okuu Spheres
             StateMachine.RegisterTransition(BehaviorStates.OkuuSpheres, null, false, () => AttackTimer == 360);
@@ -143,6 +143,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
                 StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.SpearDashDirect]);
                 StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.SpearTossPredictiveWithDestroyers]);
+                StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.VoidRays]);
                 //StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.SpawnDestroyers]);
                 return;
 

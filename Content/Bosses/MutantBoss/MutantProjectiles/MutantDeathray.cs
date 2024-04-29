@@ -1,4 +1,6 @@
 ﻿using FargowiltasSouls.Assets.ExtraTextures;
+using FargowiltasSouls.Content.Buffs.Boss;
+using FargowiltasSouls.Content.Buffs.Masomode;
 using FargowiltasSouls.Content.Projectiles.Deathrays;
 using FargowiltasSouls.Core.Systems;
 using Luminance.Core.Graphics;
@@ -6,19 +8,35 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using Terraria;
+using Terraria.Audio;
+using Terraria.DataStructures;
 using Terraria.ID;
+using Terraria.ModLoader;
 
 namespace FargowiltasSouls.Content.Bosses.MutantBoss
 {
-    public class MutantDeathraySmall : BaseDeathray, IPixelatedPrimitiveRenderer
+    public class MutantDeathray : MutantSpecialDeathray, IPixelatedPrimitiveRenderer
     {
-
-        public override string Texture => "FargowiltasSouls/Content/Projectiles/Deathrays/PhantasmalDeathrayML";
-        public MutantDeathraySmall() : base(30) { }
+        public MutantDeathray() : base(60) { }
 
         public override bool? CanDamage()
         {
-            return false;
+            return Projectile.scale >= 1;
+        }
+
+        public override bool CanHitPlayer(Player target)
+        {
+            return target.hurtCooldowns[1] == 0;
+        }
+
+        public override void OnSpawn(IEntitySource source)
+        {
+            SoundEngine.PlaySound(SoundID.Zombie104, Projectile.Center);
+            Projectile.frame = Main.rand.Next(16);
+
+            // Default value
+            if (Duration == 0)
+                Duration = 60;
         }
 
         public ref float Duration => ref Projectile.ai[0];
@@ -30,6 +48,8 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
         public override void AI()
         {
+            base.AI();
+
             if (Projectile.velocity.HasNaNs() || Projectile.velocity == Vector2.Zero)
                 Projectile.velocity = -Vector2.UnitY;
 
@@ -41,9 +61,9 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             }
 
             // Oscillate the scale a bit
-            Projectile.scale = MathF.Sin(Timer * MathHelper.Pi / Duration) * 0.2f;
-            if (Projectile.scale > 0.3f)
-                Projectile.scale = 0.3f;
+            Projectile.scale = MathF.Sin(Timer * MathHelper.Pi / Duration) * 4f;
+            if (Projectile.scale > 1)
+                Projectile.scale = 1;
 
             // Values
             float maxLaserLength = 1500;
@@ -53,13 +73,24 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             Timer++;
         }
 
+        public override void OnHitPlayer(Player target, Player.HurtInfo info)
+        {
+            if (WorldSavingSystem.EternityMode)
+            {
+                target.FargoSouls().MaxLifeReduction += 100;
+                target.AddBuff(ModContent.BuffType<OceanicMaulBuff>(), 5400);
+                target.AddBuff(ModContent.BuffType<MutantFangBuff>(), 180);
+            }
+            target.AddBuff(ModContent.BuffType<CurseoftheMoonBuff>(), 600);
+        }
+
         public override bool PreDraw(ref Color lightColor) => false;
 
         public float WidthFunction(float trailInterpolant) => Projectile.width * Projectile.scale * 1.3f;
 
         public static Color ColorFunction(float trailInterpolant)
         {
-            Color color = FargoSoulsUtil.AprilFools ? Color.Red : Color.Cyan;//Color.Lerp(new(31, 187, 192), new(51, 255, 191), trailInterpolant) * Projectile.Opacity;
+            Color color = FargoSoulsUtil.AprilFools ? Color.Red : Color.Cyan;
             color.A = 100;
             return color;
         }
@@ -82,8 +113,6 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             for (int i = 0; i < baseDrawPoints.Length; i++)
                 baseDrawPoints[i] = Vector2.Lerp(initialDrawPoint, laserEnd, i / (float)(baseDrawPoints.Length - 1f));
 
-            // Set shader parameters. This one takes a fademap and a color.
-
             // GameShaders.Misc["FargoswiltasSouls:MutantDeathray"].UseImage1(); cannot be used due to only accepting vanilla paths.
             FargosTextureRegistry.MutantStreak.Value.SetTexture1();
             // The laser should fade to this in the middle.
@@ -93,7 +122,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             shader.TrySetParameter("uColorFadeScaler", 1f);
             shader.TrySetParameter("useFadeIn", true);
 
-            PrimitiveRenderer.RenderTrail(baseDrawPoints, new(WidthFunction, ColorFunction, Pixelate: true, Shader: shader), 20);
+            PrimitiveRenderer.RenderTrail(baseDrawPoints, new(WidthFunction, ColorFunction, Pixelate: true, Shader: shader), 25);
         }
     }
 }
