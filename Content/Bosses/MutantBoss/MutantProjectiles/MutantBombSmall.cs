@@ -1,7 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.Audio;
+using Terraria.DataStructures;
 using Terraria.ID;
+using Terraria.ModLoader;
 
 namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
 {
@@ -28,24 +31,29 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
             return true;
         }
 
-        public override void AI()
+        public override void OnSpawn(IEntitySource source)
         {
-            if (Projectile.localAI[0] == 0)
-            {
-                Projectile.localAI[0] = 1;
-                Projectile.rotation = Main.rand.NextFloat(MathHelper.TwoPi);
-                SoundEngine.PlaySound(SoundID.Item14, Projectile.Center);
-            }
+            if (ExplosionDuration == 0)
+                ExplosionDuration = 21;
 
-            if (++Projectile.frameCounter >= 3)
-            {
-                Projectile.frameCounter = 0;
-                if (++Projectile.frame >= Main.projFrames[Projectile.type])
-                {
-                    Projectile.frame--;
-                    Projectile.Kill();
-                }
-            }
+            if (ExplosionScale == 0)
+                ExplosionScale = 0.75f;
+
+            SoundEngine.PlaySound(SoundID.Item14, Projectile.Center);
+
+            Projectile.rotation = Main.rand.NextFloat(MathHelper.TwoPi);
+        }
+
+        public override bool PreDraw(ref Color lightColor)
+        {
+            Texture2D tex = ModContent.Request<Texture2D>(Texture).Value;
+            int frameHeight = tex.Height / Main.projFrames[Projectile.type];
+            Rectangle rect = new(0, frameHeight * Projectile.frame, tex.Width, frameHeight);
+
+            Main.spriteBatch.Draw(tex, Projectile.Center - Main.screenPosition, rect, Projectile.GetAlpha(lightColor) with { A = 210 },
+                Projectile.rotation, rect.Size() / 2f, Projectile.scale * 3f, SpriteEffects.None, 0f);
+
+            return false;
         }
     }
 }

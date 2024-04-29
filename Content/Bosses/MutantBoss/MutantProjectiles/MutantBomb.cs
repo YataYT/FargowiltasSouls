@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using Terraria;
 using Terraria.Audio;
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -17,7 +18,6 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
 
         public override void SetStaticDefaults()
         {
-            // DisplayName.SetDefault("Phantasmal Blast");
             Main.projFrames[Projectile.type] = Main.projFrames[ProjectileID.LunarFlare];
         }
 
@@ -40,6 +40,8 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
 
         public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
         {
+            return Utilities.CircularHitboxCollision(Projectile.Center, Projectile.width * Projectile.scale, targetHitbox);
+
             int clampedX = projHitbox.Center.X - targetHitbox.Center.X;
             int clampedY = projHitbox.Center.Y - targetHitbox.Center.Y;
 
@@ -59,58 +61,72 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
             return target.hurtCooldowns[1] == 0;
         }
 
+        public override void OnSpawn(IEntitySource source)
+        {
+            if (ExplosionDuration == 0)
+                ExplosionDuration = 21;
+
+            if (ExplosionScale == 0)
+                ExplosionScale = 1;
+
+            SoundEngine.PlaySound(SoundID.Item14, Projectile.Center);
+
+            Projectile.rotation = Main.rand.NextFloat(MathHelper.TwoPi);
+
+            // Dust and gore!!
+            for (int i = 0; i < 2; i++)
+                Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, DustID.Smoke, Alpha: 100, Scale: 3f);
+
+            for (int i = 0; i < 5; i++)
+            {
+                int d = Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, DustID.IceTorch, Scale: 3.5f);
+                Main.dust[d].noGravity = true;
+                Main.dust[d].noLight = true;
+                Main.dust[d].velocity *= 4f;
+            }
+
+            for (int i = 0; i < 2; i++)
+            {
+                int dust = Dust.NewDust(Projectile.position, Projectile.width,
+                    Projectile.height, DustID.Torch, Alpha: 100, Scale: 3.5f);
+                Main.dust[dust].noGravity = true;
+                Main.dust[dust].velocity *= 7f;
+                dust = Dust.NewDust(Projectile.position, Projectile.width,
+                    Projectile.height, DustID.Torch, Alpha: 100, Scale: 1.5f);
+                Main.dust[dust].velocity *= 3f;
+            }
+
+            Gore.NewGore(Projectile.GetSource_FromThis(), Projectile.Center, Vector2.Zero, Main.rand.Next(61, 64));
+        }
+
+        /*
+         public ref float AI0 => ref Projectile.ai[0];
+        public ref float AI1 => ref Projectile.ai[1];
+        public ref float AI2 => ref Projectile.ai[2];
+        public ref float LAI0 => ref Projectile.localAI[0];
+        public ref float LAI1 => ref Projectile.localAI[1];
+        public ref float LAI2 => ref Projectile.localAI[2];
+         */
+
+        public ref float ExplosionDuration => ref Projectile.ai[0];
+        public ref float ExplosionScale => ref Projectile.ai[1];
+        public ref float AI2 => ref Projectile.ai[2];
+        public ref float Timer => ref Projectile.localAI[0];
+        public ref float LAI1 => ref Projectile.localAI[1];
+        public ref float LAI2 => ref Projectile.localAI[2];
+
         public override void AI()
         {
-            if (Projectile.localAI[0] == 0)
+            // AI values aren't established yet when SetDefaults is called
+            if (Timer == 0)
             {
-                Projectile.localAI[0] = 1;
-                Projectile.rotation = Main.rand.NextFloat(MathHelper.TwoPi);
-
-                SoundEngine.PlaySound(SoundID.Item14, Projectile.Center);
-                for (int i = 0; i < 2; i++)
-                {
-                    int dust = Dust.NewDust(Projectile.position, Projectile.width,
-                        Projectile.height, DustID.Smoke, 0f, 0f, 100, default, 3f);
-                    Main.dust[dust].velocity *= 1.4f;
-                }
-                for (int i = 0; i < 5; i++)
-                {
-                    int d = Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, DustID.IceTorch, 0f, 0f, 0, default, 3.5f);
-                    Main.dust[d].noGravity = true;
-                    Main.dust[d].noLight = true;
-                    Main.dust[d].velocity *= 4f;
-                }
-                for (int i = 0; i < 2; i++)
-                {
-                    int dust = Dust.NewDust(Projectile.position, Projectile.width,
-                        Projectile.height, DustID.Torch, 0f, 0f, 100, default, 3.5f);
-                    Main.dust[dust].noGravity = true;
-                    Main.dust[dust].velocity *= 7f;
-                    dust = Dust.NewDust(Projectile.position, Projectile.width,
-                        Projectile.height, DustID.Torch, 0f, 0f, 100, default, 1.5f);
-                    Main.dust[dust].velocity *= 3f;
-                }
-
-                float scaleFactor9 = 0.5f;
-
-                int gore = Gore.NewGore(Projectile.GetSource_FromThis(), Projectile.Center,
-                    default,
-                    Main.rand.Next(61, 64));
-
-                Main.gore[gore].velocity *= scaleFactor9;
-                Main.gore[gore].velocity.X += 1f;
-                Main.gore[gore].velocity.Y += 1f;
+                Projectile.timeLeft = (int)ExplosionDuration;
+                Projectile.scale = ExplosionScale;
             }
 
-            if (++Projectile.frameCounter >= 3)
-            {
-                Projectile.frameCounter = 0;
-                if (++Projectile.frame >= Main.projFrames[Projectile.type])
-                {
-                    Projectile.frame--;
-                    Projectile.Kill();
-                }
-            }
+            Projectile.frame = (int)MathHelper.Lerp(0, Main.projFrames[Projectile.type], Timer / ExplosionDuration);
+
+            Timer++;
         }
 
         public override void OnHitPlayer(Player target, Player.HurtInfo info)
@@ -132,16 +148,13 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
 
         public override bool PreDraw(ref Color lightColor)
         {
-            Texture2D texture2D13 = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value;
-            int num156 = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value.Height / Main.projFrames[Projectile.type]; //ypos of lower right corner of sprite to draw
-            int y3 = num156 * Projectile.frame; //ypos of upper left corner of sprite to draw
-            Rectangle rectangle = new(0, y3, texture2D13.Width, num156);
-            Vector2 origin2 = rectangle.Size() / 2f;
-            Color color = Projectile.GetAlpha(lightColor);
-            color.A = 210;
-            Main.EntitySpriteDraw(texture2D13, Projectile.Center - Main.screenPosition + new Vector2(0f, Projectile.gfxOffY),
-                new Microsoft.Xna.Framework.Rectangle?(rectangle), color, Projectile.rotation, origin2,
-                Projectile.scale * 4, SpriteEffects.None, 0);
+            Texture2D tex = ModContent.Request<Texture2D>(Texture).Value;
+            int frameHeight = tex.Height / Main.projFrames[Projectile.type];
+            Rectangle rect = new(0, frameHeight * Projectile.frame, tex.Width, frameHeight);
+
+            Main.spriteBatch.Draw(tex, Projectile.Center - Main.screenPosition, rect, Projectile.GetAlpha(lightColor) with { A = 210 },
+                Projectile.rotation, rect.Size() / 2f, Projectile.scale, SpriteEffects.None, 0f);
+
             return false;
         }
     }
