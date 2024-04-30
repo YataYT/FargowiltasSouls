@@ -29,24 +29,39 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         public void OkuuSpheresP1()
         {
             ref float shootTimer = ref AI1;
+            ref float sphereRingsShot = ref AI2;
+            ref float endAttack = ref LAI3;
+
+            float masoSpeedBuff = MasochistMode ? 3 : 1;
+            int max = MasochistMode ? 9 : 6;
+            float speed = MasochistMode ? 10 : 9;
+            int sign = MasochistMode ? (sphereRingsShot % 2 == 0 ? 1 : -1) : 1;
 
             // Don't move only if in Maso
             if (MasochistMode)
                 NPC.velocity = Vector2.Zero;
+            else
+                NPC.velocity = NPC.SafeDirectionTo(Player.Center) * 2f;
 
             // Spawn sphere rings
             if (--shootTimer < 0)
             {
-                NPC.netUpdate = true;
-                float masoSpeedBuff = MasochistMode ? 3 : 1;
+                sphereRingsShot++;
                 shootTimer = 90 / masoSpeedBuff;
 
-                int max = MasochistMode ? 9 : 6;
-                float speed = MasochistMode ? 10 : 9;
-                int sign = MasochistMode ? (AI2 % 2 == 0 ? 1 : -1) : 1;
-                SpawnSphereRing(max, speed, (int)(0.8 * FargoSoulsUtil.ScaledProjectileDamage(NPC.damage)), 1f * sign);
-                SpawnSphereRing(max, speed, (int)(0.8 * FargoSoulsUtil.ScaledProjectileDamage(NPC.damage)), -0.5f * sign);
-            } 
+                if (sphereRingsShot < 4 * masoSpeedBuff)
+                {
+                    SpawnSphereRing(max, speed, (int)(0.8 * FargoSoulsUtil.ScaledProjectileDamage(NPC.damage)), 1f * sign);
+                    SpawnSphereRing(max, speed, (int)(0.8 * FargoSoulsUtil.ScaledProjectileDamage(NPC.damage)), -0.5f * sign);
+                }
+            }
+
+            // End the attack when enough rings are fired, except with some extra end time in masomode (weak)
+            if (sphereRingsShot > 4 * masoSpeedBuff)
+            {
+                if (!MasochistMode || sphereRingsShot > 6 * masoSpeedBuff)
+                    endAttack++;
+            }
         }
 
         public void OkuuSpheresP2AndP3()
@@ -55,6 +70,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             ref float direction = ref AI2;
             ref float overallAttackTimer = ref AI3;
             ref float endTime = ref LAI1;
+            ref float endAttack = ref LAI3;
 
             // Don't move
             NPC.velocity = Vector2.Zero;

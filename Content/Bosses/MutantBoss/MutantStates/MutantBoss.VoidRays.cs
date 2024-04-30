@@ -44,6 +44,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             if (AttackTimer < approachTime)
             {
                 Vector2 targetPos = Player.Center + Player.SafeDirectionTo(NPC.Center) * 250;
+                currentRotation = Player.SafeDirectionTo(NPC.Center).ToRotation();
                 Movement(targetPos, 0.5f);
                 return;
             }

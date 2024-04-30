@@ -68,13 +68,13 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             StateMachine.RegisterTransition(BehaviorStates.VoidRays, null, false, () => AI3 >= AI0 && AttackTimer > 3);
 
             // Okuu Spheres
-            StateMachine.RegisterTransition(BehaviorStates.OkuuSpheres, null, false, () => AttackTimer == 360);
+            StateMachine.RegisterTransition(BehaviorStates.OkuuSpheres, null, false, () => LAI3 != 0);
 
             // Boundary Bullet Hell
             StateMachine.RegisterTransition(BehaviorStates.BoundaryBulletHell, null, false, () => AttackTimer == 360);
 
             // True Eye Dive
-            StateMachine.RegisterTransition(BehaviorStates.TrueEyeDive, null, false, () => AttackTimer == 360);
+            StateMachine.RegisterTransition(BehaviorStates.TrueEyeDive, null, false, () => AI1 != 0 && AttackTimer > AI1);
 
             // Spawn Destroyers
             StateMachine.RegisterTransition(BehaviorStates.SpawnDestroyers, null, false, () => LAI3 == -1);
@@ -142,9 +142,10 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 StateMachine.StateStack.Clear();
 
                 StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.SpearDashDirect]);
+                StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.TrueEyeDive]);
                 StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.SpearTossPredictiveWithDestroyers]);
                 StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.VoidRays]);
-                //StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.SpawnDestroyers]);
+                StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.OkuuSpheres]);
                 return;
 
                 // Get the correct attack list, and remove the last attack used

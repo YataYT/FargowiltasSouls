@@ -230,11 +230,11 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             if (!HostCheck) return;
             SoundEngine.PlaySound(SoundID.Item84, NPC.Center);
 
-            float rotation = 2f * MathHelper.Pi / max;
+            float rotation = MathHelper.TwoPi / max;
             for (int i = 0; i < max; i++)
             {
                 Vector2 velocity = speed * Vector2.UnitY.RotatedBy(rotation * i + offset);
-                Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, velocity, ModContent.ProjectileType<MutantSphereRing>(), damage, 0f, Main.myPlayer, rotationModifier * NPC.spriteDirection, speed);
+                Projectile.NewProjectile(NPC.GetSource_FromAI(), NPC.Center, velocity, ModContent.ProjectileType<MutantSphereRing>(), damage, 0f, Main.myPlayer, rotationModifier * NPC.spriteDirection, speed);
             }
         }
 

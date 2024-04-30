@@ -21,9 +21,40 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         {
             ref float direction = ref AI3;
             ref float numberOfEyesReleased = ref AI2;
+            ref float endTimer = ref AI1;
+            ref float maxEyeThreshold = ref LAI0;
 
             // Fire an eye every X frames
             float eyeFireRate = 15;
+
+            if (AttackTimer == 1)
+                maxEyeThreshold = MasochistMode ? 6 : 3;
+
+            // Prepare first
+            if (CurrentPhase == 0)
+            {
+                if (AttackTimer < 180)
+                {
+                    Vector2 targetPos = Player.Center;
+                    targetPos += new Vector2(700 * MathF.Sign(Player.Center.X - NPC.Center.X), -400f);
+                    Movement(targetPos, 0.6f);
+
+                    // If Mutant gets very close to the player, go straight for the eye dive
+                    if (NPC.Distance(targetPos) < 50)
+                        AttackTimer = 180;
+                }
+            }
+            // Phase 2
+            else
+            {
+                if (AttackTimer < 60)
+                {
+                    Vector2 targetPos = Player.Center;
+                    targetPos += new Vector2(400 * MathF.Sign(Player.Center.X - NPC.Center.X), -400);
+                    Movement(targetPos, 1.2f);
+                    return;
+                }
+            }
 
             // Get initial direction
             if (direction == 0)
@@ -45,7 +76,6 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             // Fire an eye
             if (AttackTimer % eyeFireRate == 0)
             {
-                int maxEyeThreshold = MasochistMode ? 6 : 3;
                 if (++numberOfEyesReleased <= maxEyeThreshold)
                 {
                     if (HostCheck)
@@ -55,20 +85,13 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
                         // Which kind of eye to use
                         if (ratio <= 1f)
-                            type = ModContent.ProjectileType<MutantTrueEyeL>();
+                            type = ModContent.ProjectileType<MutantTrueEyeDeathray>();
                         else if (ratio <= 2f)
-                            type = ModContent.ProjectileType<MutantTrueEyeS>();
+                            type = ModContent.ProjectileType<MutantTrueEyeBolt>();
                         else
-                            type = ModContent.ProjectileType<MutantTrueEyeR>();
+                            type = ModContent.ProjectileType<MutantTrueEyeSphere>();
 
-                        int p = Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Zero, type, FargoSoulsUtil.ScaledProjectileDamage(NPC.damage, 0.8f), 0f, Main.myPlayer, NPC.target);
-
-                        // Inform them which side the attack began on
-                        if (p != Main.maxProjectiles)
-                        {
-                            Main.projectile[p].localAI[1] = direction;
-                            Main.projectile[p].netUpdate = true;
-                        }
+                        Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Zero, type, FargoSoulsUtil.ScaledProjectileDamage(NPC.damage, 0.8f), 0f, Main.myPlayer, NPC.target, direction);
                     }
 
                     // Effects
@@ -82,6 +105,10 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                     }
                 }
             }
+
+            // Add buffer time
+            if (numberOfEyesReleased == maxEyeThreshold)
+                endTimer = AttackTimer + (eyeFireRate * (MasochistMode ? 3 : 5));
         }
     }
 }

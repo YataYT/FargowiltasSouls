@@ -53,12 +53,12 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             OriginalSpeed = Projectile.velocity.Length();
         }
 
-        public ref float OriginalSpeed => ref Projectile.ai[0];
-        public ref float RitualID => ref Projectile.ai[1];
+        public ref float RotationModifier => ref Projectile.ai[0];
+        public ref float Speed => ref Projectile.ai[1];
         public ref float MutantPhase => ref Projectile.ai[2];
         public ref float Timer => ref Projectile.localAI[0];
-        public ref float LAI1 => ref Projectile.localAI[1];
-        public ref float LAI2 => ref Projectile.localAI[2];
+        public ref float OriginalSpeed => ref Projectile.localAI[1];
+        public ref float RitualID => ref Projectile.localAI[2];
 
         public override void AI()
         {
@@ -70,15 +70,23 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                     Projectile.frame = 0;
             }
 
+            Timer++;
+
+            // Update the velocity to move in a ring-like pattern
+            Projectile.velocity = OriginalSpeed * Projectile.velocity.SafeNormalize(Vector2.One).RotatedBy(Speed / (MathHelper.TwoPi * RotationModifier * Timer));
+
             // Fade in
-            float fadeInTime = 12f;
+            float fadeInTime = 10f;
             Projectile.Opacity = Utilities.InverseLerp(0f, fadeInTime, Timer);
             Projectile.scale = Utilities.InverseLerp(0f, fadeInTime, Timer);
-
+            //Projectile.Opacity = Projectile.scale = 1f;
+            /*
             if (DieOutsideArena)
             {
                 if (RitualID == -1)
                 {
+                    // Give up if cannot find the ritual projectile
+                    RitualID = -2;
                     for (int i = 0; i < Main.maxProjectiles; i++)
                     {
                         if (Main.projectile[i].active && Main.projectile[i].type == ModContent.ProjectileType<MutantRitual>())
@@ -92,12 +100,10 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 Projectile ritual = FargoSoulsUtil.ProjectileExists(RitualID, ModContent.ProjectileType<MutantRitual>());
                 if (ritual != null && Projectile.Distance(ritual.Center) > 1200f)
                     Projectile.Kill();
-            }
+            }*/
 
             // If in masomode and desperation phase, the player will get frozen on hit
             TryTimeStop();
-
-            Timer++;
         }
 
         private void TryTimeStop()

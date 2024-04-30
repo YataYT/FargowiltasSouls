@@ -1,6 +1,7 @@
 ﻿using FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles;
 using FargowiltasSouls.Content.Buffs.Boss;
 using FargowiltasSouls.Content.Buffs.Masomode;
+using FargowiltasSouls.Content.Items;
 using FargowiltasSouls.Core.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -51,7 +52,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         {
             if (FargoSoulsUtil.HostCheck)
                 Projectile.NewProjectile(Terraria.Entity.InheritSource(Projectile), Projectile.Center + Projectile.velocity * Projectile.timeLeft,
-                    Vector2.Normalize(Projectile.velocity), ModContent.ProjectileType<MutantDeathraySmall>(), Projectile.damage, 0f, Projectile.owner);
+                    Vector2.Normalize(Projectile.velocity), ModContent.ProjectileType<MutantDeathraySmall>(), Projectile.damage, 0f, Projectile.owner, WorldSavingSystem.MasochistModeReal ? 0 : 60);
         }
 
         public override void AI()
