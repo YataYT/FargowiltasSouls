@@ -15,7 +15,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 {
     public partial class MutantBoss : ModNPC
     {
-        [AutoloadAsBehavior<EntityAIState<BehaviorStates>, BehaviorStates>(BehaviorStates.BoundaryBulletHell)]
+        [AutoloadAsBehavior<EntityAIState<BehaviorStates>, BehaviorStates>(BehaviorStates.MechRayFan)]
         public void MechRayFan() {
             ref float laserTimer = ref AI1;
             ref float laserSweepDirection = ref AI2;

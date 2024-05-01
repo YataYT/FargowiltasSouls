@@ -1,4 +1,5 @@
 ﻿using Fargowiltas.NPCs;
+using FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles;
 using FargowiltasSouls.Content.Buffs.Boss;
 using FargowiltasSouls.Content.Buffs.Masomode;
 using FargowiltasSouls.Content.Buffs.Souls;
@@ -14,6 +15,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -28,6 +30,7 @@ using Terraria.ModLoader;
 
 namespace FargowiltasSouls.Content.Bosses.MutantBoss
 {
+    [AutoloadBossHead]
     public partial class MutantBoss : ModNPC
     {
         public override string Texture => $"FargowiltasSouls/Content/Bosses/MutantBoss/{FargoSoulsUtil.TryAprilFoolsTexturePath}MutantBoss{FargoSoulsUtil.TryAprilFoolsTexture}";
@@ -62,8 +65,8 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         }
 
         public override void SetDefaults() {
-            NPC.width = 120;//34;
-            NPC.height = 120;//50;
+            NPC.width = 120;
+            NPC.height = 120;
             NPC.damage = 444;
             NPC.defense = 255;
             NPC.value = Item.buyPrice(7);
@@ -90,6 +93,9 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 Music = MusicID.OtherworldlyTowers;
             }
             SceneEffectPriority = SceneEffectPriority.BossHigh;
+
+            if (FargoSoulsUtil.AprilFools)
+                NPC.GivenName = Language.GetTextValue("Mods.FargowiltasSouls.NPCs.MutantBoss_April.DisplayName");
         }
 
         public override void SetBestiary(BestiaryDatabase database, BestiaryEntry bestiaryEntry) {
@@ -121,12 +127,14 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             writer.Write(NPC.localAI[0]);
             writer.Write(NPC.localAI[1]);
             writer.Write(NPC.localAI[2]);
+            writer.Write(NPC.localAI[3]);
         }
 
         public override void ReceiveExtraAI(BinaryReader reader) {
             NPC.localAI[0] = reader.ReadSingle();
             NPC.localAI[1] = reader.ReadSingle();
             NPC.localAI[2] = reader.ReadSingle();
+            NPC.localAI[3] = reader.ReadSingle();
         }
 
         public override void OnSpawn(IEntitySource source) {
@@ -146,13 +154,28 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             AuraCenter = NPC.Center;
         }
 
+        public override bool PreAI()
+        {
+            if (MasochistMode && !Main.dedServ)
+            {
+                if (!Main.LocalPlayer.ItemTimeIsZero && (Main.LocalPlayer.HeldItem.type == ItemID.RodofDiscord || Main.LocalPlayer.HeldItem.type == ItemID.RodOfHarmony))
+                    Main.LocalPlayer.AddBuff(ModContent.BuffType<TimeFrozenBuff>(), 600);
+            }
+            return base.PreAI();
+        }
+
         public override void AI() {
             // Try to find a new target if the current one is invalid
             bool invalidTarget = Target.Invalid;
             if (invalidTarget)
                 NPC.TargetClosest(false);
 
+            if (EternityMode && CurrentPhase == 1 && FargoSoulsUtil.ProjectileExists(ritualProj, ModContent.ProjectileType<MutantRitual>()) == null)
+                ritualProj = Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Zero, ModContent.ProjectileType<MutantRitual>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), 0f, Main.myPlayer, 0f, NPC.whoAmI);
+
             EModeGlobalNPC.mutantBoss = NPC.whoAmI;
+
+            NPC.direction = NPC.spriteDirection = MathF.Sign(Player.Center.X - NPC.Center.X);
 
             // Try to find a new target if the current one is very far away.
             if (!NPC.WithinRange(Target.Center, 4600f))
@@ -188,6 +211,8 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
             // DEBUG AREA
             CurrentPhase = 0;
+
+            //if (StateMachine.StateStack.Count > 0)  Main.NewText(StateMachine?.StateStack?.Peek()?.Identifier);
         }
 
         public override void OnHitPlayer(Player target, Player.HurtInfo hurtInfo) {

@@ -14,6 +14,7 @@ using FargowiltasSouls.Core.Systems;
 using Microsoft.Xna.Framework.Graphics;
 using FargowiltasSouls.Content.Projectiles.Masomode;
 using Terraria.Audio;
+using Microsoft.Build.Construction;
 
 namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
 {
@@ -182,7 +183,20 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
 
         public override bool PreDraw(ref Color lightColor)
         {
-            Utilities.DrawAfterimagesCentered(Projectile, 2, lightColor);
+            Texture2D tex = ModContent.Request<Texture2D>(Texture).Value;
+            int frameHeight = tex.Height / Main.projFrames[Projectile.type];
+            Rectangle rect = new(0, frameHeight * Projectile.frame, tex.Width, frameHeight);
+            float scale = ((Main.mouseTextColor / 200f - 0.35f) * 0.4f + 1f) * Projectile.scale;
+
+            for (int i = 0; i < ProjectileID.Sets.TrailCacheLength[Projectile.type]; i++)
+            {
+                Color afterimageColor = Color.White * Projectile.Opacity * 0.75f;
+                afterimageColor.A = 0;
+                afterimageColor *= (float)(ProjectileID.Sets.TrailCacheLength[Projectile.type] - i) / ProjectileID.Sets.TrailCacheLength[Projectile.type];
+                Main.EntitySpriteDraw(tex, Projectile.oldPos[i] + Projectile.Size / 2f - Main.screenPosition, rect, afterimageColor, Projectile.oldRot[i], rect.Size() / 2f, scale, SpriteEffects.None, 0);
+            }
+
+            Main.EntitySpriteDraw(tex, Projectile.Center - Main.screenPosition, rect, Color.White * Projectile.Opacity, Projectile.rotation, rect.Size() / 2f, Projectile.scale, SpriteEffects.None, 0);
 
             Texture2D pupil = ModContent.Request<Texture2D>("FargowiltasSouls/Content/Projectiles/Minions/TrueEyePupil").Value;
             Vector2 pupilOffset = new Vector2(CurrentPupilOffset / 2f, 0f).RotatedBy(CurrentEyeAngle);

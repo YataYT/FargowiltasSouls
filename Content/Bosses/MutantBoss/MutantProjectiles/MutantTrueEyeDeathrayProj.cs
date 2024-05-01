@@ -125,7 +125,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
             shader.TrySetParameter("stretchAmount", 3);
             shader.TrySetParameter("scrollSpeed", 2f);
             shader.TrySetParameter("uColorFadeScaler", 1f);
-            shader.TrySetParameter("useFadeIn", false);
+            shader.TrySetParameter("useFadeIn", true);
 
             PrimitiveRenderer.RenderTrail(baseDrawPoints, new(WidthFunction, ColorFunction, Pixelate: true, Shader: shader), 20);
         }

@@ -126,6 +126,8 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
         public static float HyperMax = 0;
 
+        public int ritualProj;
+
         public float EndTimeVariance;
 
         public const string ProjectilePath = "FargowiltasSouls/Content/Bosses/MutantBoss/MutantProjectiles/";

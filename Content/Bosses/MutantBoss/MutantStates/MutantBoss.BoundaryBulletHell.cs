@@ -20,80 +20,83 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
     public partial class MutantBoss : ModNPC
     {
         [AutoloadAsBehavior<EntityAIState<BehaviorStates>, BehaviorStates>(BehaviorStates.BoundaryBulletHell)]
-        public void BoundaryBulletHell() {
-            ref float currentDirection = ref AI0;
-            ref float currentRotation = ref AI2;
+        public void BoundaryBulletHell()
+        {
+            ref float endTime = ref AI0;
+            ref float ai1 = ref AI1;
+            ref float ai2 = ref AI2;
+            ref float currentRotation = ref AI3;
+            ref float direction = ref LAI0;
+            ref float lai1 = ref LAI1;
+            ref float lai2 = ref LAI2;
+            ref float lai3 = ref LAI3;
 
-            // Shoots faster in P2 with less eyes. Shoots slower in P3 with more eyes.
-            float attackDelay = (CurrentPhase == 1 ? 2 : 3);
+            int fireRate = 3;
+            float rotationVelocity = MathHelper.Pi / 77f;
+            int eyesPerShot = 4;
+            endTime = MasochistMode ? 360 : 240;
+            int pauseAtStart = 0;
+            float eyeSpeed = 7f;
 
-            NPC.velocity = Vector2.Zero;
+            // Initialization
+            if (AttackTimer == 1)
+            {
+                direction = Math.Sign(NPC.Center.X - Player.Center.X);
 
-            // Initialize direction
-            if (currentDirection == 0) {
-                currentDirection = MathF.Sign(NPC.Center.X - Player.Center.X);
+                if (CurrentPhase == 1 && MasochistMode)
+                    currentRotation = Main.rand.NextFloat(MathHelper.TwoPi);
 
-                // Create glow ring effect in P2
-                if (HostCheck && CurrentPhase == 1)
-                    Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Zero, ModContent.ProjectileType<GlowRing>(), 0, 0f, Main.myPlayer, NPC.whoAmI, -2);
-
-                // idk if this is needed
-                if (MasochistMode && CurrentPhase == 1)
-                    currentRotation = Main.rand.NextFloat(MathHelper.Pi);
-            }
-
-            // In p2, only start shooting after a delay. In p3, start instantly
-            bool phaseTwoDelay = CurrentPhase == 1 ? AttackTimer > 60 : true;
-
-            // Shoot mutant eyes
-            if (AttackTimer % attackDelay == 0 && phaseTwoDelay) {
-                SoundEngine.PlaySound(SoundID.Item12, NPC.Center);
-
-                // Custom rotation for each phase
                 if (CurrentPhase == 1)
-                    currentRotation += MasochistMode ? MathHelper.Pi / 8 / 480 * (AttackTimer - 300) * currentDirection : MathHelper.Pi / 77f;
-                else if (CurrentPhase == 2)
-                    currentRotation += MathHelper.Pi / 8 / 480 * AttackTimer * currentDirection;
-                else
-                    currentRotation += MathHelper.Pi / 5 / 420 * AttackTimer * currentDirection * (MasochistMode ? 2 : 1);
-                currentRotation = MathHelper.WrapAngle(currentRotation);    // Keep the rotation wrapped
-
-                if (HostCheck) {
-                    int max = CalculateEyeAmount();
-                    float eyeSpeed = CurrentPhase == 0 ? -7f : -6f;
-
-                    for (int i = 0; i < max; i++)
-                        Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, new Vector2(0f, eyeSpeed).RotatedBy(currentRotation + MathHelper.TwoPi / max * i),
-                           ModContent.ProjectileType<MutantEye>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), 0f, Main.myPlayer);
-                }
+                    Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Zero, ModContent.ProjectileType<GlowRing>(), 0, 0f, Main.myPlayer, NPC.whoAmI, -2);
             }
 
-            // Only in P3
-            if (CurrentPhase == 2) {
-                for (int i = 0; i < 5; i++) {
-                    int d = Dust.NewDust(NPC.position, NPC.width, NPC.height, FargoSoulsUtil.AprilFools ? DustID.SolarFlare : DustID.Vortex, 0f, 0f, 0, default, 1.5f);
-                    Main.dust[d].noGravity = true;
-                    Main.dust[d].noLight = true;
-                    Main.dust[d].velocity *= 4f;
-                }
-            }
-        }
+            // Different rotational velocity in Maso P1
+            if (CurrentPhase == 0 && MasochistMode)
+                rotationVelocity = MathHelper.Pi / 3840 * (AttackTimer - 300) * direction;
 
-        // Since the values for each phase are very different, calculating the number of eyes shot per "cycle" gets their own function
-        private int CalculateEyeAmount() {
-            if (CurrentPhase == 0) {                // 4/5 eyes
-                return MasochistMode ? 5 : 4;
-            } else if (CurrentPhase == 1) {         // 4/5/6 eyes
-                int numEyes = 4;
+            // Phase 1 changes
+            if (CurrentPhase == 1)
+            {
+                rotationVelocity = MathHelper.Pi / 8 / 480 * AttackTimer * direction;
+                pauseAtStart = 60;
+                endTime = 360 + pauseAtStart;
+                eyeSpeed = 6;
 
                 if (EternityMode)
-                    numEyes++;
+                    eyesPerShot++;
                 if (MasochistMode)
-                    numEyes++;
+                    eyesPerShot++;
+            }
 
-                return numEyes;
-            } else {                                // 8/10 eyes
-                return MasochistMode ? 10 : 8;
+            // Phase 2 changes
+            if (CurrentPhase == 2)
+            {
+                fireRate = 4;
+                eyesPerShot = MasochistMode ? 10 : 8;
+                rotationVelocity = MathHelper.Pi / 2100 * AttackTimer * direction * (MasochistMode ? 2 : 1);
+                eyeSpeed = 6;
+                endTime = 360;
+
+                if (MasochistMode)
+                    endTime += 360;
+            }
+
+            // Stop moving
+            NPC.velocity = Vector2.Zero;
+
+            // Fire eyes
+            if (AttackTimer % fireRate == 0 && AttackTimer > pauseAtStart)
+            {
+                SoundEngine.PlaySound(SoundID.Item12, NPC.Center);
+                currentRotation += rotationVelocity;
+                currentRotation = MathHelper.WrapAngle(currentRotation);
+
+                if (HostCheck)
+                {
+                    for (int i = 0; i < eyesPerShot; i++)
+                        Projectile.NewProjectile(NPC.GetSource_FromAI(), NPC.Center, Vector2.UnitY.RotatedBy(currentRotation + MathHelper.TwoPi / eyesPerShot * i) * -eyeSpeed,
+                            ModContent.ProjectileType<MutantEye>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), 0f, Main.myPlayer);
+                }
             }
         }
     }

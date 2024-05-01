@@ -28,14 +28,18 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
         public void OkuuSpheresP1()
         {
-            ref float shootTimer = ref AI1;
             ref float sphereRingsShot = ref AI2;
-            ref float endAttack = ref LAI3;
+            ref float endTime = ref LAI3;
 
             float masoSpeedBuff = MasochistMode ? 3 : 1;
             int max = MasochistMode ? 9 : 6;
             float speed = MasochistMode ? 10 : 9;
             int sign = MasochistMode ? (sphereRingsShot % 2 == 0 ? 1 : -1) : 1;
+            int baseFireRate = 90;
+            int baseNumRings = 4;
+            endTime = baseFireRate * baseNumRings + 1;
+            if (MasochistMode)  // Wait a bit longer in Masomode
+                endTime = baseFireRate * baseNumRings * 1.5f + 1;
 
             // Don't move only if in Maso
             if (MasochistMode)
@@ -44,69 +48,84 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 NPC.velocity = NPC.SafeDirectionTo(Player.Center) * 2f;
 
             // Spawn sphere rings
-            if (--shootTimer < 0)
+            if (AttackTimer % (int)(baseFireRate / masoSpeedBuff) == 1)
             {
                 sphereRingsShot++;
-                shootTimer = 90 / masoSpeedBuff;
 
-                if (sphereRingsShot < 4 * masoSpeedBuff)
+                if (sphereRingsShot <= baseNumRings * masoSpeedBuff)
                 {
                     SpawnSphereRing(max, speed, (int)(0.8 * FargoSoulsUtil.ScaledProjectileDamage(NPC.damage)), 1f * sign);
                     SpawnSphereRing(max, speed, (int)(0.8 * FargoSoulsUtil.ScaledProjectileDamage(NPC.damage)), -0.5f * sign);
                 }
             }
-
-            // End the attack when enough rings are fired, except with some extra end time in masomode (weak)
-            if (sphereRingsShot > 4 * masoSpeedBuff)
-            {
-                if (!MasochistMode || sphereRingsShot > 6 * masoSpeedBuff)
-                    endAttack++;
-            }
         }
 
         public void OkuuSpheresP2AndP3()
         {
-            ref float shootTimer = ref AI1;
-            ref float direction = ref AI2;
-            ref float overallAttackTimer = ref AI3;
-            ref float endTime = ref LAI1;
-            ref float endAttack = ref LAI3;
+            ref float endTime = ref LAI3;
+            ref float attackDirection = ref AI2;
+            ref float currentRotation = ref AI3;
 
-            // Don't move
-            NPC.velocity = Vector2.Zero;
+            // Experimental
+            float rotationSpeed = 1f;
 
-            bool isPhaseTwo = CurrentPhase == 1;    // Phase 3 if false
-            endTime = 360;
+            // Variables
+            int pauseAtStart = 180;
+            int pauseBeforeFiring = 60 + pauseAtStart;
+            int shootTime = 360 + pauseBeforeFiring;
+            int pauseAtEnd = 60;
+            int fireRate = 10;
+            int totalAttackTime = pauseAtStart + shootTime + pauseAtEnd;
+            float ringRotation = MathHelper.ToRadians(60) * (currentRotation - 45) / 240;
+            int ringMax = MasochistMode ? 10 : 9;
+            float ringSpeed = MasochistMode ? 11f : 10f;
+            float ringRotationModifier = 1f;
 
-            // Phase-specific changes
-            if (!isPhaseTwo)
-                endTime += 120 + (MasochistMode ? 360 : 0);
+            endTime = totalAttackTime;
 
-            // Shoot every 10 frames after 60 seconds
-            if (++shootTimer > 10 && overallAttackTimer > 60 && overallAttackTimer < endTime)
+            // Change some values in the desperation phase version of the attack
+            if (CurrentPhase == 2)
             {
-                shootTimer = 0;
-                float rotation = MathHelper.ToRadians(60) * (overallAttackTimer - 45) / 240 * direction;
-                int max = (MasochistMode ? 10 : 9) + (isPhaseTwo ? 0 : 1);
-                float speed = MasochistMode ? 11f : 10f;
-                float rotationModifier = isPhaseTwo ? 1f : 0.75f;
-                SpawnSphereRing(max, speed, FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), -rotationModifier, rotation);
-                SpawnSphereRing(max, speed, FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), rotationModifier, rotation);
+                pauseAtEnd += 60;
+                ringMax = MasochistMode ? 11 : 10;
+                ringSpeed = MasochistMode ? 11 : 10;
+                ringRotationModifier = 0.75f;
+                pauseAtStart = 0;
             }
 
-            // Initialized at the start of an attack
-            if (direction == 0 && isPhaseTwo)
+            // Initialize variables
+            if (AttackTimer == 1 + pauseAtStart)
             {
-                direction = Main.rand.NextBool() ? -1 : 1;
-                overallAttackTimer = Main.rand.NextFloat(MathHelper.TwoPi);
-                
-                // Telegraph that the attack is about to happen
+                attackDirection = Main.rand.NextBool() ? 1 : -1;
+                currentRotation = Main.rand.NextFloat(MathHelper.TwoPi);
+
                 SoundEngine.PlaySound(SoundID.Roar, NPC.Center);
-                if (HostCheck)
+                if (HostCheck && CurrentPhase == 1)
                     Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Zero, ModContent.ProjectileType<GlowRing>(), 0, 0f, Main.myPlayer, NPC.whoAmI, -2);
             }
 
-            // Effects
+            // Hover somewhere from the player for the first few seconds before doing anything else (only in Phase 2)
+            if (CurrentPhase == 1 && AttackTimer < pauseAtStart)
+            {
+                Vector2 targetPos = Player.Center + Player.SafeDirectionTo(NPC.Center) * 450f;
+                Movement(targetPos, 0.8f);
+                return;
+            }
+
+            // Fire rings of spheres
+            if (AttackTimer % fireRate == 0 && AttackTimer > pauseBeforeFiring && AttackTimer < shootTime)
+            {
+                SpawnSphereRing(ringMax, ringSpeed, FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), -ringRotationModifier, ringRotation);
+                SpawnSphereRing(ringMax, ringSpeed, FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), ringRotationModifier, ringRotation);
+            }
+
+            // Increase the rotation
+            currentRotation += attackDirection * rotationSpeed;
+
+            // Freeze in place
+            NPC.velocity = Vector2.Zero;
+
+            // Dust effect
             for (int i = 0; i < 5; i++)
             {
                 int d = Dust.NewDust(NPC.position, NPC.width, NPC.height, FargoSoulsUtil.AprilFools ? DustID.SolarFlare : DustID.Vortex, 0f, 0f, 0, default, 1.5f);

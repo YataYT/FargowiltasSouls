@@ -58,6 +58,10 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 {
                     if (Main.projectile[i].type == ModContent.ProjectileType<MutantSpearSpin>() || Main.projectile[i].type == ModContent.ProjectileType<MutantSpearDash>())
                         Main.projectile[i].Kill();
+
+                    // This causes all the eyes to fly away
+                    if (Main.projectile[i].type == ModContent.ProjectileType<MutantEyeHoming>())
+                        Main.projectile[i].ai[2] = 69;
                 }
             });
 
@@ -68,10 +72,10 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             StateMachine.RegisterTransition(BehaviorStates.VoidRays, null, false, () => AI3 >= AI0 && AttackTimer > 3);
 
             // Okuu Spheres
-            StateMachine.RegisterTransition(BehaviorStates.OkuuSpheres, null, false, () => LAI3 != 0);
+            StateMachine.RegisterTransition(BehaviorStates.OkuuSpheres, null, false, () => AttackTimer > LAI3);
 
             // Boundary Bullet Hell
-            StateMachine.RegisterTransition(BehaviorStates.BoundaryBulletHell, null, false, () => AttackTimer == 360);
+            StateMachine.RegisterTransition(BehaviorStates.BoundaryBulletHell, null, false, () => AttackTimer > AI0);
 
             // True Eye Dive
             StateMachine.RegisterTransition(BehaviorStates.TrueEyeDive, null, false, () => AI1 != 0 && AttackTimer > AI1);
@@ -81,6 +85,9 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
             // Spear Toss Direct
             StateMachine.RegisterTransition(BehaviorStates.SpearTossDirect, null, false, () => AttackTimer == 360);
+
+            // Mutant Sword
+            StateMachine.RegisterTransition(BehaviorStates.MutantSword, null, false, () => AI1 != 0 && LAI2 >= AI1);
 
             // Mech Ray Fan
             StateMachine.RegisterTransition(BehaviorStates.MechRayFan, null, false, () => AttackTimer == 360);
@@ -141,11 +148,13 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
                 StateMachine.StateStack.Clear();
 
+                StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.MutantSword]);
+                StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.BoundaryBulletHell]);
+                StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.VoidRays]);
                 StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.SpearDashDirect]);
                 StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.TrueEyeDive]);
-                StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.SpearTossPredictiveWithDestroyers]);
-                StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.VoidRays]);
                 StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.OkuuSpheres]);
+                StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.SpearTossPredictiveWithDestroyers]);
                 return;
 
                 // Get the correct attack list, and remove the last attack used

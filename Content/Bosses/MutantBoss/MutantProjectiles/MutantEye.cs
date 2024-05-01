@@ -62,12 +62,21 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         }
 
         public ref float Timer => ref Projectile.localAI[0];
-        public ref float RitualID => ref Projectile.localAI[1];
+        public ref float CurrentTrailLength => ref Projectile.localAI[1];
+        public ref float RitualID => ref Projectile.localAI[2];
 
         public override void AI()
         {
+            // Adjust the rotation to face its velocity
             Projectile.rotation = Projectile.velocity.ToRotation() + MathHelper.PiOver2;
 
+            // Make the trail grow in length as it travels
+            if (CurrentTrailLength < ProjectileID.Sets.TrailCacheLength[Projectile.type])
+                CurrentTrailLength += 0.1f;
+            else
+                CurrentTrailLength = ProjectileID.Sets.TrailCacheLength[Projectile.type];
+
+            // Die if outside the arena (only applies to non-homing mutant eyes)
             if (DieOutsideArena)
             {
                 Projectile ritual = FargoSoulsUtil.ProjectileExists(RitualID, ModContent.ProjectileType<MutantRitual>());
@@ -116,18 +125,28 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             Texture2D glow = ModContent.Request<Texture2D>("FargowiltasSouls/Content/Bosses/MutantBoss/MutantProjectiles/MutantEye_Glow").Value;
             int frameHeight = glow.Height / Main.projFrames[Projectile.type];
             Rectangle rect = new(0, frameHeight * Projectile.frame, glow.Width, frameHeight);
-            Color glowColor = (FargoSoulsUtil.AprilFools ? new Color(255, 0, 0, TrailAdditive) : new Color(31, 187, 192, TrailAdditive)) * 0.74f;
-            Vector2 drawCenter = Projectile.Center - Projectile.velocity.SafeNormalize(Vector2.UnitX) * 14f;
+            Color glowColor = (FargoSoulsUtil.AprilFools ? new Color(255, 0, 0, TrailAdditive) : new Color(31, 187, 192, TrailAdditive)) * 0.3f;
+            Vector2 baseDrawCenter = Projectile.Center - Projectile.velocity.SafeNormalize(Vector2.UnitX) * 14;
 
             for (int i = 0; i < 3; i++) //create multiple transparent trail textures ahead of the projectile
             {
-                Vector2 drawCenter2 = drawCenter + (Projectile.velocity.SafeNormalize(Vector2.UnitX) * 8).RotatedBy(MathHelper.Pi / 5 - i * MathHelper.Pi / 5);
-                drawCenter2 -= Projectile.velocity.SafeNormalize(Vector2.UnitX) * 8;
-                Main.EntitySpriteDraw(glow, drawCenter2 - Main.screenPosition, rect, glowColor, Projectile.velocity.ToRotation() + MathHelper.PiOver2,
-                    rect.Size() / 2f, Projectile.scale, SpriteEffects.None, 0);
+                Vector2 drawCenter = baseDrawCenter + (Projectile.velocity.SafeNormalize(Vector2.UnitX) * 8).RotatedBy(MathHelper.Pi / 5 - i * MathHelper.Pi / 5); // Use a normalized version of the projectile's velocity to offset it at different angles
+                drawCenter -= Projectile.velocity.SafeNormalize(Vector2.UnitX) * 8; // Then move it backwards
+                float scale = Projectile.scale + MathF.Sin(Timer / 4f) / 10;
+                Main.spriteBatch.Draw(glow, drawCenter - Main.screenPosition, rect, glowColor, Projectile.velocity.ToRotation() + MathHelper.PiOver2, rect.Size() / 2f, scale, SpriteEffects.None, 0);
             }
 
-            Utilities.DrawAfterimagesCentered(Projectile, 2, lightColor);
+            // Trail grows in length as projectile travels
+            for (float i = CurrentTrailLength - 1; i > 0; i -= CurrentTrailLength / ProjectileID.Sets.TrailCacheLength[Projectile.type])
+            {
+                Color afterimageColor = glowColor * 0.6f;
+
+                afterimageColor *= (int)((CurrentTrailLength - i) / CurrentTrailLength) ^ 2;
+                float scale = Projectile.scale * (float)(CurrentTrailLength - i) / CurrentTrailLength + MathF.Sin(Timer) / 10;
+                Vector2 afterimagePos = Projectile.oldPos[(int)i] - Projectile.velocity.SafeNormalize(Vector2.UnitX) * 14;
+                Main.EntitySpriteDraw(glow, afterimagePos + Projectile.Size / 2f - Main.screenPosition, rect, afterimageColor,
+                    Projectile.velocity.ToRotation() + MathHelper.PiOver2, rect.Size() / 2f, scale * 0.8f, SpriteEffects.None, 0);
+            }
 
             return false;
         }

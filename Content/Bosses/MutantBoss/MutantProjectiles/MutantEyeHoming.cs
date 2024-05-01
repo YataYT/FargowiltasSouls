@@ -12,10 +12,6 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 {
     public class MutantEyeHoming : MutantEye
     {
-        public override string Texture => FargoSoulsUtil.AprilFools ?
-            "FargowiltasSouls/Content/Bosses/MutantBoss/TextureAlts/MutantEye_April" :
-            "Terraria/Images/Projectile_452";
-
         public override void SetDefaults()
         {
             base.SetDefaults();
@@ -36,65 +32,70 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         public ref float LAI1 => ref Projectile.localAI[1];
         public ref float LAI2 => ref Projectile.localAI[2];*/
 
-        public ref float BackupPlayerTarget => ref Projectile.ai[0];
+        public ref float MutantIndex => ref Projectile.ai[0];
         public ref float SpeedBonus => ref Projectile.ai[1];
-        public ref float HomingTimer => ref Projectile.ai[2];
+        public ref float FlyAway => ref Projectile.ai[2];
+        public ref float HomingTimer => ref Projectile.localAI[2];
 
         public override void AI()
         {
-            float maxSpeed = WorldSavingSystem.MasochistModeReal ? 15f : 10f;
-            bool stopChasing = false;
             int endHomingTime = -600;
+            float maxSpeed = WorldSavingSystem.MasochistModeReal ? 15f : 10f;
 
-            NPC mutant = FargoSoulsUtil.NPCExists(EModeGlobalNPC.mutantBoss, ModContent.NPCType<MutantBoss>());
-            Player player = FargoSoulsUtil.PlayerExists(mutant == null ? Projectile.ai[0] : mutant.target);
-
-            // Stop chasing if any of these are true
-            if (mutant is null && !Main.getGoodWorld && !WorldSavingSystem.MasochistModeReal)
+            // Perish if the mutant or the target cannot be retrieved
+            NPC mutant = FargoSoulsUtil.NPCExists(MutantIndex, ModContent.NPCType<MutantBoss>());
+            if (mutant == null)
             {
-                HomingTimer = endHomingTime;
-                stopChasing = true;
+                Projectile.Kill();
+                return;
+            }
+            Player target = FargoSoulsUtil.PlayerExists(mutant.target);
+            if (target == null)
+            {
+                Projectile.Kill();
+                return;
             }
 
-            // Fly away?
-            if (stopChasing || HomingTimer < 0 && player is not null && Projectile.Distance(player.Center) < 240)
+            // Fly away from the player if it's still homing (?)
+            if ((FlyAway != 0 || HomingTimer > 0) && target != null && Projectile.Distance(target.Center) < 240)
             {
-                float angle = MathHelper.WrapAngle(Projectile.DirectionFrom(player.Center).ToRotation() - Projectile.velocity.ToRotation());
+                float angle = Projectile.DirectionFrom(target.Center).ToRotation() - Projectile.velocity.ToRotation();
+                angle = MathHelper.WrapAngle(angle);
                 Projectile.velocity = Projectile.velocity.RotatedBy(angle * 0.05f);
-            } 
-            // Home in on player
-            else if (HomingTimer < 0 && HomingTimer > endHomingTime && player is not null)
-            {
-                float homingMaxSpeed = maxSpeed * SpeedBonus;
 
+                // Limit the lifetime
+                if (Projectile.timeLeft > 180)
+                    Projectile.timeLeft = 180;
+            }
+            else if (HomingTimer < 0 && HomingTimer > endHomingTime)
+            {
+                // Accelerate to max homing speed
+                float homingMaxSpeed = maxSpeed * SpeedBonus;
+                Vector2 targetPos = target.Center;
+                float deactivateHomingRange = WorldSavingSystem.MasochistModeReal ? 360 : 480;
                 if (Projectile.velocity.Length() < homingMaxSpeed)
                     Projectile.velocity *= 1.02f;
 
-                Vector2 target = player.Center;
-                float deactivateHomingRange = WorldSavingSystem.MasochistModeReal ? 360 : 480;
-                if (Projectile.Distance(target) > deactivateHomingRange)
+                // Home into the player if outside of the homing range
+                if (Projectile.Distance(targetPos) > deactivateHomingRange)
                 {
-                    Vector2 distance = target - Projectile.Center;
-                    float angle = MathHelper.WrapAngle(distance.ToRotation() - Projectile.velocity.ToRotation());
-                    Projectile.velocity = Projectile.velocity.RotatedBy(angle * 0.1f);
+                    Vector2 distance = targetPos - Projectile.Center;
+
+                    float angle = distance.ToRotation() - Projectile.velocity.ToRotation();
+                    angle = MathHelper.WrapAngle(angle);
+                    Projectile.velocity = Projectile.velocity.RotatedBy(angle * 0.1);
                 }
-                // Stop homing
+                // Otherwise, deactivate homing
                 else
-                {
                     HomingTimer = endHomingTime;
-                }
             }
 
+            // Simply fly in one direction
             if (HomingTimer < endHomingTime && !Main.getGoodWorld)
             {
-                if (Projectile.velocity.Length() > maxSpeed)
+                if (Projectile.velocity.Length() > maxSpeed * SpeedBonus)
                     Projectile.velocity *= 0.96f;
-
-
-                // Cut down the lifespan
-                if (Projectile.timeLeft > 120)
-                    Projectile.timeLeft = 120;
-            } 
+            }
 
             HomingTimer--;
 
