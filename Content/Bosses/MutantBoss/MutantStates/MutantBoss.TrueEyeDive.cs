@@ -19,12 +19,12 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         [AutoloadAsBehavior<EntityAIState<BehaviorStates>, BehaviorStates>(BehaviorStates.TrueEyeDive)]
         public void TrueEyeDive()
         {
-            ref float direction = ref AI3;
-            ref float numberOfEyesReleased = ref AI2;
-            ref float endTimer = ref AI1;
-            ref float maxEyeThreshold = ref LAI0;
-            ref float startDive = ref LAI1;
-            ref float initialDirection = ref LAI2;
+            ref float direction = ref MainAI3;
+            ref float numberOfEyesReleased = ref MainAI2;
+            ref float endTimer = ref MainAI1;
+            ref float maxEyeThreshold = ref MainAI4;
+            ref float startDive = ref MainAI5;
+            ref float initialDirection = ref MainAI6;
 
             // Fire an eye every X frames
             float eyeFireRate = 15;
@@ -38,7 +38,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 if (AttackTimer == 1)
                     initialDirection = MathF.Sign(NPC.Center.X - Player.Center.X);
 
-                if (CurrentPhase == 0)
+                if (CurrentPhase == 1)
                 {
                     Vector2 targetPos = Player.Center;
                     targetPos += new Vector2(700 * initialDirection, -400f);

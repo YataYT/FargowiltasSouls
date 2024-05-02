@@ -73,7 +73,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                         Vector2 speed = Vector2.UnitY.RotatedByRandom(MathHelper.PiOver2) * Main.rand.NextFloat(6f, 9f);
                         if (MutantBoss.Center.Y < Main.player[MutantBoss.target].Center.Y)
                             speed *= -1f;
-                        float speedBonus = CurrentPhase == 1 ? 2f : 1f;
+                        float speedBonus = CurrentPhase == 2 ? 2f : 1f;
                         int p = Projectile.NewProjectile(Terraria.Entity.InheritSource(Projectile), Projectile.position + Main.rand.NextVector2Square(0f, Projectile.width),
                             speed, ModContent.ProjectileType<MutantEyeHoming>(), Projectile.damage, 0f, Projectile.owner, MutantIndex, speedBonus);
                         Main.projectile[p].timeLeft = (int)MathF.Abs(IsPredictiveAndMutantEyeLifetime);

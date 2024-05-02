@@ -9,6 +9,7 @@ using FargowiltasSouls.Content.Items.Materials;
 using FargowiltasSouls.Content.Items.Pets;
 using FargowiltasSouls.Content.Items.Placables.Relics;
 using FargowiltasSouls.Content.Items.Placables.Trophies;
+using FargowiltasSouls.Content.Sky;
 using FargowiltasSouls.Core.Globals;
 using FargowiltasSouls.Core.ItemDropRules.Conditions;
 using FargowiltasSouls.Core.Systems;
@@ -210,6 +211,16 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             }
         }
 
+        private void TryMasoP3Theme()
+        {
+            if (WorldSavingSystem.MasochistModeReal
+                && ModLoader.TryGetMod("FargowiltasMusic", out Mod musicMod)
+                && musicMod.Version >= Version.Parse("0.1.1.3"))
+            {
+                Music = MusicLoader.GetMusicSlot(musicMod, "Assets/Music/StoriaShort");
+            }
+        }
+
         public override bool PreAI()
         {
             if (MasochistMode && !Main.dedServ)
@@ -226,7 +237,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             if (invalidTarget)
                 NPC.TargetClosest(false);
 
-            if (EternityMode && CurrentPhase == 1 && FargoSoulsUtil.ProjectileExists(CurrentRitualProjectile, ModContent.ProjectileType<MutantRitual>()) == null)
+            if (EternityMode && CurrentPhase == 2 && FargoSoulsUtil.ProjectileExists(CurrentRitualProjectile, ModContent.ProjectileType<MutantRitual>()) == null)
                 CurrentRitualProjectile = Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Zero, ModContent.ProjectileType<MutantRitual>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), 0f, Main.myPlayer, 0f, NPC.whoAmI);
 
             EModeGlobalNPC.mutantBoss = NPC.whoAmI;
@@ -242,7 +253,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 NPC.active = false;
 
             // Phase 2+: Disable weather effects and set time to midnight for empress visuals
-            if (EternityMode && CurrentPhase > 0) {
+            if (EternityMode && CurrentPhase > 1) {
                 Main.dayTime = false;
                 Main.time = 16200; // midnight
 
@@ -266,7 +277,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 AttackTimer++;
 
             // DEBUG AREA
-            CurrentPhase = 0;
+            CurrentPhase = 1;
             AuraCenter = NPC.Center;
 
             //if (StateMachine.StateStack.Count > 0)  Main.NewText(StateMachine?.StateStack?.Peek()?.Identifier);

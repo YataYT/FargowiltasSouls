@@ -19,13 +19,13 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         [AutoloadAsBehavior<EntityAIState<BehaviorStates>, BehaviorStates>(BehaviorStates.SpawnDestroyers)]
         public void SpawnDestroyers() {
             // Normally this is a P2 exclusive attack, but Maso releases destroyers all at once in P1
-            if (CurrentPhase == 0 && MasochistMode)
+            if (CurrentPhase == 1 && MasochistMode)
                 SpawnDestroyersMasoP1();
-            else if (CurrentPhase == 1)
+            else if (CurrentPhase == 2)
                 SpawnDestroyersP2();
             // Cancel the attack
             else
-                LAI3 = -1;
+                MainAI7 = -1;
         }
 
         

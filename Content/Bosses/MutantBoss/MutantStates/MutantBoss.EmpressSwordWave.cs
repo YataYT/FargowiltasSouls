@@ -17,10 +17,10 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
     {
         [AutoloadAsBehavior<EntityAIState<BehaviorStates>, BehaviorStates>(BehaviorStates.EmpressSwordWave)]
         public void EmpressSwordWave() {
-            ref float swordBarrageTimer = ref AI2;
-            ref float rotation = ref AI3;
-            ref float playerX = ref LAI0;
-            ref float playerY = ref LAI1;
+            ref float swordBarrageTimer = ref MainAI2;
+            ref float rotation = ref MainAI3;
+            ref float playerX = ref MainAI4;
+            ref float playerY = ref MainAI5;
 
             // Don't move
             NPC.velocity = Vector2.Zero;

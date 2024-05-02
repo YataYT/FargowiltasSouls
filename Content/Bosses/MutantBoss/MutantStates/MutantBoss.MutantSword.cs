@@ -21,13 +21,13 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
     {
         [AutoloadAsBehavior<EntityAIState<BehaviorStates>, BehaviorStates>(BehaviorStates.MutantSword)]
         public void MutantSword() {
-            ref float swordsToSwing = ref AI1;
-            ref float swingAngleLength = ref AI2;
-            ref float currentSwingAngle = ref AI3;
-            ref float endOfLastSwingTime = ref LAI0;
-            ref float direction = ref LAI1;
-            ref float currentSwordsSwung = ref LAI2;
-            ref float swingChargeValue = ref LAI3;
+            ref float swordsToSwing = ref MainAI1;
+            ref float swingAngleLength = ref MainAI2;
+            ref float currentSwingAngle = ref MainAI3;
+            ref float endOfLastSwingTime = ref MainAI4;
+            ref float direction = ref MainAI5;
+            ref float currentSwordsSwung = ref MainAI6;
+            ref float swingChargeValue = ref MainAI7;
 
             // Alternates direction on 2nd swing in Phase 2
             float swingDirection = currentSwordsSwung % 2 == 1 ? -1 : 1;
@@ -41,7 +41,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             swordsToSwing = MasochistMode ? 2 : 1;
 
             // Disable dodge in P1
-            if (CurrentPhase == 0 && Main.LocalPlayer.active && NPC.Distance(Main.LocalPlayer.Center) < 3000f && Main.expertMode)
+            if (CurrentPhase == 1 && Main.LocalPlayer.active && NPC.Distance(Main.LocalPlayer.Center) < 3000f && Main.expertMode)
                 Main.LocalPlayer.AddBuff(ModContent.BuffType<PurgedBuff>(), 2);
 
             // First, move in range of the player so they can see
@@ -124,7 +124,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                         ScreenShakeSystem.StartShake(15, shakeStrengthDissipationIncrement: 15f / 30);
 
                     // Moon chain explosions
-                    if (EternityMode && CurrentPhase == 1 || MasochistMode)
+                    if (EternityMode && CurrentPhase == 2 || MasochistMode)
                     {
                         SoundEngine.PlaySound(SoundID.Thunder with { Pitch = -0.5f }, NPC.Center);
 

@@ -22,14 +22,14 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         [AutoloadAsBehavior<EntityAIState<BehaviorStates>, BehaviorStates>(BehaviorStates.BoundaryBulletHell)]
         public void BoundaryBulletHell()
         {
-            ref float endTime = ref AI0;
-            ref float ai1 = ref AI1;
-            ref float ai2 = ref AI2;
-            ref float currentRotation = ref AI3;
-            ref float direction = ref LAI0;
-            ref float lai1 = ref LAI1;
-            ref float lai2 = ref LAI2;
-            ref float lai3 = ref LAI3;
+            ref float endTime = ref MainAI0;
+            ref float ai1 = ref MainAI1;
+            ref float ai2 = ref MainAI2;
+            ref float currentRotation = ref MainAI3;
+            ref float direction = ref MainAI4;
+            ref float lai1 = ref MainAI5;
+            ref float lai2 = ref MainAI6;
+            ref float lai3 = ref MainAI7;
 
             int fireRate = 3;
             float rotationVelocity = MathHelper.Pi / 77f;
@@ -43,15 +43,15 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             {
                 direction = Math.Sign(NPC.Center.X - Player.Center.X);
 
-                if (CurrentPhase == 1 && MasochistMode)
+                if (CurrentPhase == 2 && MasochistMode)
                     currentRotation = Main.rand.NextFloat(MathHelper.TwoPi);
 
-                if (CurrentPhase == 1)
+                if (CurrentPhase == 2)
                     Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Zero, ModContent.ProjectileType<GlowRing>(), 0, 0f, Main.myPlayer, NPC.whoAmI, -2);
             }
 
             // Different rotational velocity in Maso P1
-            if (CurrentPhase == 0 && MasochistMode)
+            if (CurrentPhase == 1 && MasochistMode)
                 rotationVelocity = MathHelper.Pi / 3840 * (AttackTimer - 300) * direction;
 
             // Phase 1 changes

@@ -50,10 +50,10 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             // See Cursed Coffin code for a deeper explanation of how to do this part
 
             // Opening
-            StateMachine.RegisterTransition(BehaviorStates.Opening, null, false, () => LAI2 != 0);
+            StateMachine.RegisterTransition(BehaviorStates.Opening, null, false, () => MainAI6 != 0);
 
             // Spear Dash Direct
-            StateMachine.RegisterTransition(BehaviorStates.SpearDashDirect, null, false, () => AI3 >= LAI2 && AttackTimer > LAI0, () => {
+            StateMachine.RegisterTransition(BehaviorStates.SpearDashDirect, null, false, () => MainAI3 >= MainAI6 && AttackTimer > MainAI4, () => {
                 for (int i = 0; i < Main.maxProjectiles; i++)
                 {
                     if (Main.projectile[i].type == ModContent.ProjectileType<MutantSpearSpin>() || Main.projectile[i].type == ModContent.ProjectileType<MutantSpearDash>())
@@ -66,28 +66,28 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             });
 
             // Spear Toss Predictive
-            StateMachine.RegisterTransition(BehaviorStates.SpearTossPredictiveWithDestroyers, null, false, () => AttackTimer > LAI1 && AI2 == AI3);
+            StateMachine.RegisterTransition(BehaviorStates.SpearTossPredictiveWithDestroyers, null, false, () => AttackTimer > MainAI5 && MainAI2 == MainAI3);
 
             // Void Rays
-            StateMachine.RegisterTransition(BehaviorStates.VoidRays, null, false, () => AI3 >= AI0 && AttackTimer > 3);
+            StateMachine.RegisterTransition(BehaviorStates.VoidRays, null, false, () => MainAI3 >= MainAI0 && AttackTimer > 3);
 
             // Okuu Spheres
-            StateMachine.RegisterTransition(BehaviorStates.OkuuSpheres, null, false, () => AttackTimer > LAI3);
+            StateMachine.RegisterTransition(BehaviorStates.OkuuSpheres, null, false, () => AttackTimer > MainAI7);
 
             // Boundary Bullet Hell
-            StateMachine.RegisterTransition(BehaviorStates.BoundaryBulletHell, null, false, () => AttackTimer > AI0);
+            StateMachine.RegisterTransition(BehaviorStates.BoundaryBulletHell, null, false, () => AttackTimer > MainAI0);
 
             // True Eye Dive
-            StateMachine.RegisterTransition(BehaviorStates.TrueEyeDive, null, false, () => AI1 != 0 && AttackTimer > AI1);
+            StateMachine.RegisterTransition(BehaviorStates.TrueEyeDive, null, false, () => MainAI1 != 0 && AttackTimer > MainAI1);
 
             // Spawn Destroyers
-            StateMachine.RegisterTransition(BehaviorStates.SpawnDestroyers, null, false, () => LAI3 == -1);
+            StateMachine.RegisterTransition(BehaviorStates.SpawnDestroyers, null, false, () => MainAI7 == -1);
 
             // Spear Toss Direct
             StateMachine.RegisterTransition(BehaviorStates.SpearTossDirect, null, false, () => AttackTimer == 360);
 
             // Mutant Sword
-            StateMachine.RegisterTransition(BehaviorStates.MutantSword, null, false, () => AI1 != 0 && LAI2 >= AI1);
+            StateMachine.RegisterTransition(BehaviorStates.MutantSword, null, false, () => MainAI1 != 0 && MainAI6 >= MainAI1);
 
             // Mech Ray Fan
             StateMachine.RegisterTransition(BehaviorStates.MechRayFan, null, false, () => AttackTimer == 360);
@@ -127,13 +127,13 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             NPC.netUpdate = true;
             NPC.TargetClosest(false);
 
-            AI1 = 0;
-            AI2 = 0;
-            AI3 = 0;
-            LAI0 = 0;
-            LAI1 = 0;
-            LAI2 = 0;
-            LAI3 = 0;
+            MainAI1 = 0;
+            MainAI2 = 0;
+            MainAI3 = 0;
+            MainAI4 = 0;
+            MainAI5 = 0;
+            MainAI6 = 0;
+            MainAI7 = 0;
 
             if (oldState != null && (P1Attacks.Contains(oldState.Identifier) || P2Attacks.Contains(oldState.Identifier) || P3Attacks.Contains(oldState.Identifier)))
                 LastAttackChoice = (int)oldState.Identifier;
@@ -158,7 +158,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 return;
 
                 // Get the correct attack list, and remove the last attack used
-                List<BehaviorStates> attackList = (CurrentPhase == 0 ? P1Attacks : P2Attacks).Where(attack => attack != (BehaviorStates)LastAttackChoice).ToList();
+                List<BehaviorStates> attackList = (CurrentPhase == 1 ? P1Attacks : P2Attacks).Where(attack => attack != (BehaviorStates)LastAttackChoice).ToList();
 
                 // Fill a list of indices
                 var indices = new List<int>();
@@ -177,7 +177,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         public void LoadTransition_PhaseTwoTransition() {
             // Transition hijack
             StateMachine.AddTransitionStateHijack(originalState => {
-                if (CurrentPhase != 1 && LifeRatio <= 0.5f) {
+                if (CurrentPhase != 2 && LifeRatio <= 0.5f) {
                     StateMachine.StateStack.Clear();
                     return BehaviorStates.Phase2Transition;
                 }

@@ -18,34 +18,34 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         [AutoloadAsBehavior<EntityAIState<BehaviorStates>, BehaviorStates>(BehaviorStates.SpearDashDirect)]
         public void SpearDashDirect()
         {
-            ref float isDashing = ref AI0;
-            ref float dashTimer = ref AI1;
-            ref float dashDelayTimer = ref AI2;
-            ref float numDashesDone = ref AI3;
+            ref float isDashing = ref MainAI0;
+            ref float dashTimer = ref MainAI1;
+            ref float dashDelayTimer = ref MainAI2;
+            ref float numDashesDone = ref MainAI3;
 
-            ref float endTime = ref LAI0;
-            ref float dashDelay = ref LAI1;
-            ref float numDashes = ref LAI2;
-            ref float dashTime = ref LAI3;
+            ref float endTime = ref MainAI4;
+            ref float dashDelay = ref MainAI5;
+            ref float numDashes = ref MainAI6;
+            ref float dashTime = ref MainAI7;
 
-            bool IsPhaseOne = CurrentPhase == 0;
+            bool IsPhaseOne = CurrentPhase == 1;
             int startTime = 240;
 
             // Spawn the spear projectile at the start of the attack
             if (AttackTimer == 1)
             {
                 // Initialize values
-                if (CurrentPhase == 0)
+                if (CurrentPhase == 1)
                     dashDelay = MasochistMode ? Main.rand.Next(3, 15) : 10;
                 else
                     dashDelay = EternityMode ? 5 : 20;
 
-                if (EternityMode && CurrentPhase == 1)
+                if (EternityMode && CurrentPhase == 2)
                     numDashes = Main.rand.Next(MasochistMode ? 3 : 5, 9);
                 else
                     numDashes = 5;
 
-                dashTime = CurrentPhase == 1 ? 20 : 30;
+                dashTime = CurrentPhase == 2 ? 20 : 30;
 
                 if (HostCheck)
                 {

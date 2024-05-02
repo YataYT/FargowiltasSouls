@@ -16,7 +16,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
     {
         [AutoloadAsBehavior<EntityAIState<BehaviorStates>, BehaviorStates>(BehaviorStates.Nuke)]
         public void Nuke() {
-            ref float ai1 = ref AI1;    // This is only used for preparing nuke
+            ref float ai1 = ref MainAI1;    // This is only used for preparing nuke
 
             // Movement
             Vector2 movementTarget = NPC.Bottom.Y < Player.Top.Y

@@ -20,13 +20,13 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
     {
         [AutoloadAsBehavior<EntityAIState<BehaviorStates>, BehaviorStates>(BehaviorStates.FinalSpark)]
         public void FinalSpark() {
-            ref float ai1 = ref AI1;
-            ref float ai2 = ref AI2;
-            ref float ai3 = ref AI3;
-            ref float lai0 = ref LAI0;
-            ref float lai1 = ref LAI1;
-            ref float lai2 = ref LAI2;
-            ref float lai3 = ref LAI3;
+            ref float ai1 = ref MainAI1;
+            ref float ai2 = ref MainAI2;
+            ref float ai3 = ref MainAI3;
+            ref float lai0 = ref MainAI4;
+            ref float lai1 = ref MainAI5;
+            ref float lai2 = ref MainAI6;
+            ref float lai3 = ref MainAI7;
 
             if (--lai0 < 0) //just visual explosions
             {
@@ -141,7 +141,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         }
 
         private void SpinLaser(bool useMasoSpeed) {
-            ref float ai3 = ref AI3;
+            ref float ai3 = ref MainAI3;
 
             float newRotation = NPC.DirectionTo(Main.player[NPC.target].Center).ToRotation();
             float difference = MathHelper.WrapAngle(newRotation - ai3);

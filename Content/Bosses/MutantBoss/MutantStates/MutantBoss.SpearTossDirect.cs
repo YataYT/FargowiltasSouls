@@ -16,11 +16,11 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
     {
         [AutoloadAsBehavior<EntityAIState<BehaviorStates>, BehaviorStates>(BehaviorStates.SpearTossDirect)]
         public void SpearTossDirect() {
-            ref float spearAttackTimer = ref AI1;
-            ref float spearsThrown = ref AI2;
-            ref float initialAngleOffset = ref LAI0;
-            ref float maxSpearsThrown = ref LAI1;
-            ref float rotationDirection = ref LAI2;
+            ref float spearAttackTimer = ref MainAI1;
+            ref float spearsThrown = ref MainAI2;
+            ref float initialAngleOffset = ref MainAI4;
+            ref float maxSpearsThrown = ref MainAI5;
+            ref float rotationDirection = ref MainAI6;
 
             float fireRate = MasochistMode ? 15 : 30;
             float windUpTime = 150;

@@ -18,10 +18,10 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
     {
         [AutoloadAsBehavior<EntityAIState<BehaviorStates>, BehaviorStates>(BehaviorStates.SlimeRain)]
         public void SlimeRain() {
-            ref float ai1 = ref AI1;
-            ref float ai2 = ref AI2;
-            ref float lai0 = ref LAI0;
-            ref float lai1 = ref LAI1;
+            ref float ai1 = ref MainAI1;
+            ref float ai2 = ref MainAI2;
+            ref float lai0 = ref MainAI4;
+            ref float lai1 = ref MainAI5;
 
             
             if (AttackTimer == 0) {
@@ -129,7 +129,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         }
 
         private void SpawnSlimes(Vector2 pos, float off, Vector2 vel) {
-            ref float ai2 = ref AI2;
+            ref float ai2 = ref MainAI2;
 
             // Don't flip in maso wave 3
             int flip = MasochistMode && ai2 < 180 * 2 && Main.rand.NextBool() ? -1 : 1;

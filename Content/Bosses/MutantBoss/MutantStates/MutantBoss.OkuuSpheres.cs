@@ -20,7 +20,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         [AutoloadAsBehavior<EntityAIState<BehaviorStates>, BehaviorStates>(BehaviorStates.OkuuSpheres)]
         public void OkuuSpheres()
         {
-            if (CurrentPhase == 0)
+            if (CurrentPhase == 1)
                 OkuuSpheresP1();
             else
                 OkuuSpheresP2AndP3();
@@ -28,8 +28,8 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
         public void OkuuSpheresP1()
         {
-            ref float sphereRingsShot = ref AI2;
-            ref float endTime = ref LAI3;
+            ref float sphereRingsShot = ref MainAI2;
+            ref float endTime = ref MainAI7;
 
             float masoSpeedBuff = MasochistMode ? 3 : 1;
             int max = MasochistMode ? 9 : 6;
@@ -62,9 +62,9 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
         public void OkuuSpheresP2AndP3()
         {
-            ref float endTime = ref LAI3;
-            ref float attackDirection = ref AI2;
-            ref float currentRotation = ref AI3;
+            ref float endTime = ref MainAI7;
+            ref float attackDirection = ref MainAI2;
+            ref float currentRotation = ref MainAI3;
 
             // Experimental
             float rotationSpeed = 1f;
@@ -84,7 +84,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             endTime = totalAttackTime;
 
             // Change some values in the desperation phase version of the attack
-            if (CurrentPhase == 2)
+            if (CurrentPhase == 3)
             {
                 pauseAtEnd += 60;
                 ringMax = MasochistMode ? 11 : 10;
@@ -100,12 +100,12 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 currentRotation = Main.rand.NextFloat(MathHelper.TwoPi);
 
                 SoundEngine.PlaySound(SoundID.Roar, NPC.Center);
-                if (HostCheck && CurrentPhase == 1)
+                if (HostCheck && CurrentPhase == 2)
                     Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Zero, ModContent.ProjectileType<GlowRing>(), 0, 0f, Main.myPlayer, NPC.whoAmI, -2);
             }
 
             // Hover somewhere from the player for the first few seconds before doing anything else (only in Phase 2)
-            if (CurrentPhase == 1 && AttackTimer < pauseAtStart)
+            if (CurrentPhase == 2 && AttackTimer < pauseAtStart)
             {
                 Vector2 targetPos = Player.Center + Player.SafeDirectionTo(NPC.Center) * 450f;
                 Movement(targetPos, 0.8f);

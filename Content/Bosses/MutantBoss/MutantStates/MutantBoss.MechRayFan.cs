@@ -17,9 +17,9 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
     {
         [AutoloadAsBehavior<EntityAIState<BehaviorStates>, BehaviorStates>(BehaviorStates.MechRayFan)]
         public void MechRayFan() {
-            ref float laserTimer = ref AI1;
-            ref float laserSweepDirection = ref AI2;
-            ref float skullShootTimer = ref LAI0;
+            ref float laserTimer = ref MainAI1;
+            ref float laserSweepDirection = ref MainAI2;
+            ref float skullShootTimer = ref MainAI4;
 
             // Don't move
             NPC.velocity = Vector2.Zero;

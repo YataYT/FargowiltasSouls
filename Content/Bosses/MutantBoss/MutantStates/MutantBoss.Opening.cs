@@ -40,8 +40,8 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
         [AutoloadAsBehavior<EntityAIState<BehaviorStates>, BehaviorStates>(BehaviorStates.Opening)]
         public void Opening() {
-            ref float startAttacking = ref LAI2;
-            ref float currentIndex = ref LAI3;
+            ref float startAttacking = ref MainAI6;
+            ref float currentIndex = ref MainAI7;
 
             Vector2 targetPos = Player.Center;
             float distanceFromPlayer = NPC.Distance(Player.Center);

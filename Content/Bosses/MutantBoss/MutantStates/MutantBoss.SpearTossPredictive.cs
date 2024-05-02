@@ -23,17 +23,17 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         [AutoloadAsBehavior<EntityAIState<BehaviorStates>, BehaviorStates>(BehaviorStates.SpearTossPredictiveWithDestroyers)]
         public void SpearTossPredictive()
         {
-            ref float throwTimer = ref AI1;
-            ref float spearsThrown = ref AI2;
-            ref float maxThrownSpears = ref AI3;
-            ref float currentSpearAimRotation = ref LAI0;
-            ref float endTime = ref LAI1;
-            ref float appearance = ref LAI2;
-            ref float numWormsFired = ref LAI3;
+            ref float throwTimer = ref MainAI1;
+            ref float spearsThrown = ref MainAI2;
+            ref float maxThrownSpears = ref MainAI3;
+            ref float currentSpearAimRotation = ref MainAI4;
+            ref float endTime = ref MainAI5;
+            ref float appearance = ref MainAI6;
+            ref float numWormsFired = ref MainAI7;
 
             // Spawn worms first
             int wormCap = AdjustValueForDifficulty(7, 5, 3);
-            if (CurrentPhase == 0)
+            if (CurrentPhase == 1)
             {
                 if (MasochistMode)
                     wormCap = 8;
@@ -44,7 +44,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             // Determine how many spears to throw
             if (maxThrownSpears == 0)
             {
-                if (CurrentPhase == 0)
+                if (CurrentPhase == 1)
                     maxThrownSpears = MasochistMode ? Main.rand.Next(2, 8) : 5;
                 else
                 {
@@ -58,9 +58,9 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
             if (numWormsFired < wormCap)
             {
-                if (CurrentPhase == 0 && MasochistMode)
+                if (CurrentPhase == 1 && MasochistMode)
                     SpawnDestroyersMasoP1();
-                else if (CurrentPhase == 1)
+                else if (CurrentPhase == 2)
                     SpawnDestroyersP2();
 
                 return;
@@ -72,7 +72,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             float trackingStrength = 30;
 
             // Update values for P2
-            if (CurrentPhase == 1) {
+            if (CurrentPhase == 2) {
                 spearTrackTime = 60;
                 windUpTime = 0;
                 spearThrowBufferTime = 0;
@@ -82,7 +82,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             Vector2 targetPos = Player.Center;
             targetPos.X += 500 * (NPC.Center.X < targetPos.X ? -1 : 1);
             if (NPC.Distance(targetPos) > 50)
-                Movement(targetPos, CurrentPhase == 0 ? 0.5f : 0.8f);
+                Movement(targetPos, CurrentPhase == 1 ? 0.5f : 0.8f);
 
             // Track player until right before throw
             if (throwTimer < windUpTime + spearTrackTime)
@@ -96,7 +96,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 if (HostCheck) {
                     Vector2 vel = currentSpearAimRotation.ToRotationVector2() * 25f;
                     Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, vel, ModContent.ProjectileType<MutantSpearThrown>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), 0f, Main.myPlayer, NPC.target);
-                    if (MasochistMode || CurrentPhase == 1) {
+                    if (MasochistMode || CurrentPhase == 2) {
                         Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Normalize(vel), ModContent.ProjectileType<MutantDeathray>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage, 0.8f), 0f, Main.myPlayer);
                         Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, -Vector2.Normalize(vel), ModContent.ProjectileType<MutantDeathray>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage, 0.8f), 0f, Main.myPlayer);
                     }
@@ -123,8 +123,8 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
         private void SpawnDestroyersMasoP1()
         {
-            ref float appearance = ref LAI2;
-            ref float numWormsFired = ref LAI3;
+            ref float appearance = ref MainAI6;
+            ref float numWormsFired = ref MainAI7;
 
             if (AttackTimer == 1)
                 appearance = Main.rand.Next(3);
@@ -157,9 +157,9 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
         private void SpawnDestroyersP2()
         {
-            ref float wormShootTimer = ref AI1;
-            ref float numWorms = ref LAI3;
-            ref float appearance = ref LAI2;
+            ref float wormShootTimer = ref MainAI1;
+            ref float numWorms = ref MainAI7;
+            ref float appearance = ref MainAI6;
 
             if (AttackTimer == 1)
                 appearance = Main.rand.Next(3);
@@ -211,14 +211,14 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         // Approved by Calamity
         private void SpawnWorm(float wormNum, float wormCap)
         {
-            ref float appearance = ref LAI2;
+            ref float appearance = ref MainAI6;
             Vector2 vel = NPC.DirectionFrom(Player.Center).RotatedByRandom(MathHelper.ToRadians(120)) * 10f;
 
             // Spawn head (wormAI1 determines the speed multiplier of the worm)
-            float wormAI1 = (0.8f + 0.4f * wormNum / 5f) + (MasochistMode && CurrentPhase == 1 ? 0.4f : 0f);
+            float wormAI1 = (0.8f + 0.4f * wormNum / 5f) + (MasochistMode && CurrentPhase == 2 ? 0.4f : 0f);
             int current = Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, vel, ModContent.ProjectileType<MutantDestroyerHead>(),
                 FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), 0f, Main.myPlayer, NPC.target, wormAI1, appearance);
-            Main.projectile[current].timeLeft = (int)(30f * (wormCap - wormNum) + 60f * AI3 + 30f + wormNum * 6f);
+            Main.projectile[current].timeLeft = (int)(30f * (wormCap - wormNum) + 60f * MainAI3 + 30f + wormNum * 6f);
 
             // Spawn body segments
             int max = Main.rand.Next(8, 19);

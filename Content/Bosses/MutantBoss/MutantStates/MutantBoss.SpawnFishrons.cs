@@ -16,8 +16,8 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
     {
         [AutoloadAsBehavior<EntityAIState<BehaviorStates>, BehaviorStates>(BehaviorStates.SpawnFishrons)]
         public void SpawnFishrons() {
-            ref float orientation = ref AI2;
-            ref float textureType = ref LAI0;
+            ref float orientation = ref MainAI2;
+            ref float textureType = ref MainAI4;
 
             // Slow down
             NPC.velocity *= 0.97f;

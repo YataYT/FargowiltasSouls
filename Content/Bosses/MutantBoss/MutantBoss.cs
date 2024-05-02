@@ -136,25 +136,41 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         public const string ProjectilePath = "FargowiltasSouls/Content/Bosses/MutantBoss/MutantProjectiles/";
         public bool playerInvulTriggered = false;
 
-        private ref float AI0 => ref NPC.ai[0];
-        private ref float AI1 => ref NPC.ai[1];
-        private ref float AI2 => ref NPC.ai[2];
-        private ref float AI3 => ref NPC.ai[3];
-        private ref float LAI0 => ref NPC.localAI[0];
-        private ref float LAI1 => ref NPC.localAI[1];
-        private ref float LAI2 => ref NPC.localAI[2];
-        private ref float LAI3 => ref NPC.localAI[3];
+        /// <summary>
+        /// Ideally, this should be used for internal workings such as storing values across the same attack.
+        /// The actual AI values (ai[0] - localAI[3]) are reserved for transmitting information outside of the boss,
+        /// such as projectiles tied to it or effect managers.
+        /// </summary>
+        public float[] MainAI = new float[10];
+
+        private ref float MainAI0 => ref MainAI[0];
+        private ref float MainAI1 => ref MainAI[1];
+        private ref float MainAI2 => ref MainAI[2];
+        private ref float MainAI3 => ref MainAI[3];
+        private ref float MainAI4 => ref MainAI[4];
+        private ref float MainAI5 => ref MainAI[5];
+        private ref float MainAI6 => ref MainAI[6];
+        private ref float MainAI7 => ref MainAI[7];
+        private ref float MainAI8 => ref MainAI[8];
+        private ref float MainAI9 => ref MainAI[9];
+
+        /// <summary>
+        /// The current phase.
+        /// </summary>
+        private ref float CurrentPhase => ref NPC.ai[0];
+        private ref float CurrentAttack => ref NPC.ai[1];
+        private ref float NPC_AI2 => ref NPC.ai[2];
+        private ref float NPC_AI3 => ref NPC.ai[3];
+        private ref float NPC_LAI0 => ref NPC.localAI[0];
+        private ref float NPC_LAI1 => ref NPC.localAI[1];
+        private ref float NPC_LAI2 => ref NPC.localAI[2];
+        private ref float NPC_LAI3 => ref NPC.localAI[3];
 
         public Vector2 AuraCenter;
 
         public bool EternityMode => WorldSavingSystem.EternityMode;
         public bool MasochistMode => WorldSavingSystem.MasochistModeReal;
         public bool HostCheck => FargoSoulsUtil.HostCheck;
-
-        /// <summary>
-        /// The current phase. Phase 1: 0  |  Phase 2: 1  |  Phase 3 (Desp): 2
-        /// </summary>
-        public int CurrentPhase { get; set; }
 
         private int LastAttackChoice { get; set; }
 

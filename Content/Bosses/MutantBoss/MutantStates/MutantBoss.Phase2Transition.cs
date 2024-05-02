@@ -13,7 +13,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
     {
         [AutoloadAsBehavior<EntityAIState<BehaviorStates>, BehaviorStates>(BehaviorStates.Phase2Transition)]
         public void Phase2Transition() {
-            CurrentPhase = 1;
+            CurrentPhase = 2;
             if (AttackTimer % 60 == 0)
                 Main.NewText("uwu >~<");
         }
