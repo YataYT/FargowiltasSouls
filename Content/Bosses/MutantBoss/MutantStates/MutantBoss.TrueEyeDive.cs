@@ -23,6 +23,8 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             ref float numberOfEyesReleased = ref AI2;
             ref float endTimer = ref AI1;
             ref float maxEyeThreshold = ref LAI0;
+            ref float startDive = ref LAI1;
+            ref float initialDirection = ref LAI2;
 
             // Fire an eye every X frames
             float eyeFireRate = 15;
@@ -31,29 +33,51 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 maxEyeThreshold = MasochistMode ? 6 : 3;
 
             // Prepare first
-            if (CurrentPhase == 0)
+            if (startDive == 0)
             {
-                if (AttackTimer < 180)
-                {
-                    Vector2 targetPos = Player.Center;
-                    targetPos += new Vector2(700 * MathF.Sign(Player.Center.X - NPC.Center.X), -400f);
-                    Movement(targetPos, 0.6f);
+                if (AttackTimer == 1)
+                    initialDirection = MathF.Sign(NPC.Center.X - Player.Center.X);
 
-                    // If Mutant gets very close to the player, go straight for the eye dive
-                    if (NPC.Distance(targetPos) < 50)
-                        AttackTimer = 180;
-                }
-            }
-            // Phase 2
-            else
-            {
-                if (AttackTimer < 60)
+                if (CurrentPhase == 0)
                 {
                     Vector2 targetPos = Player.Center;
-                    targetPos += new Vector2(400 * MathF.Sign(Player.Center.X - NPC.Center.X), -400);
-                    Movement(targetPos, 1.2f);
-                    return;
+                    targetPos += new Vector2(700 * initialDirection, -400f);
+                    Movement(targetPos, 0.6f);
+                    float dist = NPC.Distance(targetPos);
+                    bool e = dist < 100;
+
+                    // Start dive
+                    if (AttackTimer >= 180 || NPC.Distance(targetPos) < 100)
+                    {
+                        startDive = 420;
+
+                        NPC.velocity.X = 35f * MathF.Sign(Player.Center.X - NPC.Center.X);
+                        if (NPC.velocity.Y < 0)
+                            NPC.velocity.Y *= -1;
+                        NPC.velocity.Y *= 0.3f;
+
+                        SoundEngine.PlaySound(SoundID.Roar, NPC.Center);
+                    }
                 }
+                // Phase 2
+                else
+                {
+                    Vector2 targetPos = Player.Center + new Vector2(400 * MathF.Sign(Player.Center.X - NPC.Center.X), -400);
+                    Movement(targetPos, 1.2f);
+
+                    // Start dive
+                    if (AttackTimer >= 60)
+                    {
+                        startDive = 69;
+
+                        NPC.velocity.X = 30f * MathF.Sign(Player.Center.X - NPC.Center.X);
+                        if (NPC.velocity.Y < 0)
+                            NPC.velocity.Y *= -1;
+                        NPC.velocity.Y *= 0.3f;
+                    }
+                }
+
+                return;
             }
 
             // Get initial direction

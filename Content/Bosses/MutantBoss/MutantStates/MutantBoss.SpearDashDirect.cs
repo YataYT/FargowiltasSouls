@@ -67,6 +67,9 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 targetPos.Y += 400;
                 Movement(targetPos, 0.7f, false);
 
+                // So he dashes a bit sooner after the start time
+                dashDelayTimer = dashDelay / 4;
+
                 return;
             }
 

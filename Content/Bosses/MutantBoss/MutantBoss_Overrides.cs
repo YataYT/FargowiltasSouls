@@ -1,4 +1,5 @@
 ﻿using Fargowiltas.NPCs;
+using FargowiltasSouls.Assets.ExtraTextures;
 using FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles;
 using FargowiltasSouls.Content.Buffs.Boss;
 using FargowiltasSouls.Content.Buffs.Masomode;
@@ -21,9 +22,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Terraria;
+using Terraria.Audio;
 using Terraria.DataStructures;
 using Terraria.GameContent.Bestiary;
+using Terraria.GameContent.Creative;
 using Terraria.GameContent.ItemDropRules;
+using Terraria.Graphics.Effects;
 using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
@@ -152,6 +156,58 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             }
 
             AuraCenter = NPC.Center;
+
+            int prevLifeMax = NPC.lifeMax;
+            if (WorldSavingSystem.AngryMutant)
+            {
+                // To prevent integer overflow
+                NPC.lifeMax *= 100;
+                if (NPC.lifeMax < prevLifeMax)
+                    NPC.lifeMax = int.MaxValue;
+            }
+
+            NPC.life = NPC.lifeMax;
+
+            NPC.TargetClosest();
+            if (NPC.timeLeft < 30)
+                NPC.timeLeft = 30;
+
+            if (NPC.Distance(Player.Center) < 1500)
+            {
+                SoundEngine.PlaySound(SoundID.Roar, NPC.Center);
+
+                // Summon bosses in Maso + Angry Mutant
+                if (WorldSavingSystem.AngryMutant && MasochistMode && HostCheck)
+                    Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Zero, ModContent.ProjectileType<BossRush>(), 0, 0f, Main.myPlayer, NPC.whoAmI);
+            }
+        }
+
+        public void ManageAuras()
+        {
+            // Add Mutant Presence buff in Masomode
+            if (MasochistMode && Main.LocalPlayer.active && !Main.LocalPlayer.dead && !Main.LocalPlayer.ghost)
+                Main.LocalPlayer.AddBuff(ModContent.BuffType<MutantPresenceBuff>(), 2);
+        }
+
+        private void EModeSpecialEffects()
+        {
+            if (EternityMode)
+            {
+                // Because this breaks the background???
+                if (Main.GameModeInfo.IsJourneyMode && CreativePowerManager.Instance.GetPower<CreativePowers.FreezeTime>().Enabled)
+                    CreativePowerManager.Instance.GetPower<CreativePowers.FreezeTime>().SetPowerInfo(false);
+
+                if (!SkyManager.Instance["FargowiltasSouls:MutantBoss"].IsActive())
+                    SkyManager.Instance.Activate("FargowiltasSouls:MutantBoss");
+
+                if (ModLoader.TryGetMod("FargowiltasMusic", out Mod musicMod))
+                {
+                    if (MasochistMode && musicMod.Version >= Version.Parse("0.1.1"))
+                        Music = MusicLoader.GetMusicSlot(musicMod, "Assets/Music/Storia");
+                    else
+                        Music = MusicLoader.GetMusicSlot(musicMod, "Assets/Music/rePrologue");
+                }
+            }
         }
 
         public override bool PreAI()
@@ -170,8 +226,8 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             if (invalidTarget)
                 NPC.TargetClosest(false);
 
-            if (EternityMode && CurrentPhase == 1 && FargoSoulsUtil.ProjectileExists(ritualProj, ModContent.ProjectileType<MutantRitual>()) == null)
-                ritualProj = Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Zero, ModContent.ProjectileType<MutantRitual>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), 0f, Main.myPlayer, 0f, NPC.whoAmI);
+            if (EternityMode && CurrentPhase == 1 && FargoSoulsUtil.ProjectileExists(CurrentRitualProjectile, ModContent.ProjectileType<MutantRitual>()) == null)
+                CurrentRitualProjectile = Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Zero, ModContent.ProjectileType<MutantRitual>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), 0f, Main.myPlayer, 0f, NPC.whoAmI);
 
             EModeGlobalNPC.mutantBoss = NPC.whoAmI;
 
@@ -211,6 +267,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
             // DEBUG AREA
             CurrentPhase = 0;
+            AuraCenter = NPC.Center;
 
             //if (StateMachine.StateStack.Count > 0)  Main.NewText(StateMachine?.StateStack?.Peek()?.Identifier);
         }
@@ -304,9 +361,14 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
             Main.EntitySpriteDraw(texture2D13, position, new Rectangle?(rectangle), NPC.GetAlpha(drawColor), NPC.rotation, origin2, NPC.scale, effects, 0);
 
-            Vector2 auraPosition = AuraCenter - screenPos + new Vector2(0f, NPC.gfxOffY);
+            Vector2 auraPosition = AuraCenter - screenPos;
 
             return false;
+        }
+
+        public override void DrawBehind(int index)
+        {
+            base.DrawBehind(index);
         }
     }
 }

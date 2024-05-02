@@ -19,11 +19,12 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             ref float currentRotation = ref AI1;
             ref float currentNumLasersShot = ref AI2;
             ref float currentAmountOfRevolutions = ref AI3;
+            ref float startAttack = ref LAI0;
 
             // In P1 and P2, 20 lasers per revolution. In P3, 40 lasers per revolution.
             float lasersPerRevolution = CurrentPhase <= 1 ? 20 : 40;
             // No approach time in P3
-            int approachTime = CurrentPhase < 2 ? 100 : 0;
+            int approachTime = CurrentPhase < 2 ? 180 : 0;
 
             // 2/3 cycles in P1, 3 cycles in P2, and 3/4 cycles in P3
             numberOfRevolutions = 2;
@@ -41,12 +42,21 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 delayBetweenLasers = 1; // In P3, 1, aka shoot super fast
 
             // Approach the player first
-            if (AttackTimer < approachTime)
+            if (startAttack == 0)
             {
                 Vector2 targetPos = Player.Center + Player.SafeDirectionTo(NPC.Center) * 250;
-                currentRotation = Player.SafeDirectionTo(NPC.Center).ToRotation();
-                Movement(targetPos, 0.5f);
-                return;
+                if (AttackTimer < approachTime && NPC.Distance(targetPos) > 50)
+                {
+                    currentRotation = Player.SafeDirectionTo(NPC.Center).ToRotation();
+                    Movement(targetPos, 0.5f);
+                    return;
+                }
+                else
+                {
+                    startAttack = 69;
+                    if (Player.Center.X < NPC.Center.X)
+                        rotationAmount *= -1f;
+                }
             }
 
             // Don't move

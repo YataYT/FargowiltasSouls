@@ -126,14 +126,16 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
         public static float HyperMax = 0;
 
-        public int ritualProj;
+        public int CurrentRitualProjectile;
+        public int CurrentAuraProjectile;
+
+        public float AuraScale = 1f;
 
         public float EndTimeVariance;
 
         public const string ProjectilePath = "FargowiltasSouls/Content/Bosses/MutantBoss/MutantProjectiles/";
         public bool playerInvulTriggered = false;
 
-        public ref float RitualProj => ref NPC.ai[1];
         private ref float AI0 => ref NPC.ai[0];
         private ref float AI1 => ref NPC.ai[1];
         private ref float AI2 => ref NPC.ai[2];

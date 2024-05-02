@@ -50,7 +50,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             // See Cursed Coffin code for a deeper explanation of how to do this part
 
             // Opening
-            StateMachine.RegisterTransition(BehaviorStates.Opening, null, false, () => AttackTimer == -1);
+            StateMachine.RegisterTransition(BehaviorStates.Opening, null, false, () => LAI2 != 0);
 
             // Spear Dash Direct
             StateMachine.RegisterTransition(BehaviorStates.SpearDashDirect, null, false, () => AI3 >= LAI2 && AttackTimer > LAI0, () => {
