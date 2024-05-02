@@ -14,8 +14,13 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         [AutoloadAsBehavior<EntityAIState<BehaviorStates>, BehaviorStates>(BehaviorStates.Phase2Transition)]
         public void Phase2Transition() {
             CurrentPhase = 2;
-            if (AttackTimer % 60 == 0)
-                Main.NewText("uwu >~<");
+            NPC.dontTakeDamage = true;
+
+            if (NPC.buffType[0] != 0)
+                NPC.delBuff(0);
+
+            EModeSpecialEffects();
+            
         }
     }
 }
