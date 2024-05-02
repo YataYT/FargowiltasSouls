@@ -159,7 +159,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         /// </summary>
         private ref float CurrentPhase => ref NPC.ai[0];
         private ref float CurrentAttack => ref NPC.ai[1];
-        private ref float NPC_AI2 => ref NPC.ai[2];
+        private ref float AttackTimer => ref NPC.ai[2];
         private ref float NPC_AI3 => ref NPC.ai[3];
         private ref float NPC_LAI0 => ref NPC.localAI[0];
         private ref float NPC_LAI1 => ref NPC.localAI[1];
