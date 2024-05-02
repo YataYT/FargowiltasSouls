@@ -6,15 +6,17 @@ using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.Graphics.Effects;
 using Terraria.ModLoader;
+using XPT.Core.Audio.MP3Sharp.Decoding.Decoders.LayerI;
 
 namespace FargowiltasSouls.Content.Sky
 {
     public class MutantSky : CustomSky
     {
+        public static float intensity = 0f;
+
         private bool isActive = false;
-        private float intensity = 0f;
         private float lifeIntensity = 0f;
-        private float specialColorLerp = 0f;
+        public float specialColorLerp = 0f;
         private Color? specialColor = null;
         private int delay = 0;
         private readonly int[] xPos = new int[50];

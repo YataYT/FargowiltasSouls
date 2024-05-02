@@ -438,6 +438,7 @@ MutantDeathray2.DisplayName: Raio da Morte Fantasmagórico
 MutantDeathray3.DisplayName: Raio da Morte Ardente
 MutantDeathrayAim.DisplayName: Raio da Morte Fantasmagórico
 MutantDeathraySmall.DisplayName: Raio da Morte Fantasmagórico
+// MutantDeathray.DisplayName: Mutant Deathray
 MutantDestroyerBody.DisplayName: O Destruidor
 MutantDestroyerHead.DisplayName: O Destruidor
 MutantDestroyerTail.DisplayName: O Destruidor
@@ -716,3 +717,7 @@ PlasmaProj.DisplayName: Raio de Plasma
 // HentaiSwordBlast.DisplayName: Hentai Sword Blast
 // HentaiSphereOkuu.DisplayName: Hentai Sphere Okuu
 // AbomRitualFTW.DisplayName: Abom Ritual F T W
+// MutantTrueEyeBolt.DisplayName: Mutant True Eye Bolt
+// MutantTrueEyeDeathrayProj.DisplayName: Mutant True Eye Deathray Proj
+// MutantTrueEyeSphereProj.DisplayName: Mutant True Eye Sphere Proj
+// BaseMutantSphere.DisplayName: Base Mutant Sphere

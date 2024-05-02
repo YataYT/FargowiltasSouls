@@ -1,10 +1,12 @@
+using FargowiltasSouls.Content.Bosses.MutantBoss;
+using FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles;
 using FargowiltasSouls.Content.Buffs.Masomode;
 using Terraria;
 using Terraria.ModLoader;
 
 namespace FargowiltasSouls.Content.Projectiles.BossWeapons
 {
-    public class HentaiSphereRing : Bosses.MutantBoss.MutantSphereRing
+    public class HentaiSphereRing : MutantSphereRing
     {
         public override string Texture => "Terraria/Images/Projectile_454";
 

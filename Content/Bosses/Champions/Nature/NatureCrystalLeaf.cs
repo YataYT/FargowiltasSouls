@@ -1,4 +1,5 @@
-﻿using FargowiltasSouls.Content.Buffs.Masomode;
+﻿using FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles;
+using FargowiltasSouls.Content.Buffs.Masomode;
 using FargowiltasSouls.Core.Systems;
 using Microsoft.Xna.Framework;
 using System;
@@ -8,7 +9,7 @@ using Terraria.ModLoader;
 
 namespace FargowiltasSouls.Content.Bosses.Champions.Nature
 {
-    public class NatureCrystalLeaf : MutantBoss.MutantCrystalLeaf
+    public class NatureCrystalLeaf : MutantCrystalLeaf
     {
         public override string Texture => "Terraria/Images/Projectile_226";
 

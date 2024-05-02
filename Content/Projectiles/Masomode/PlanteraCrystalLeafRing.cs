@@ -1,4 +1,5 @@
 ﻿using FargowiltasSouls.Content.Bosses.MutantBoss;
+using FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles;
 using FargowiltasSouls.Content.Buffs.Masomode;
 using FargowiltasSouls.Core;
 using FargowiltasSouls.Core.Systems;

@@ -438,6 +438,7 @@ MutantDeathray2.DisplayName: 幻影死亡射线
 MutantDeathray3.DisplayName: 烈焰死亡射线
 MutantDeathrayAim.DisplayName: 幻影死亡射线
 MutantDeathraySmall.DisplayName: 幻影死亡射线
+// MutantDeathray.DisplayName: Mutant Deathray
 MutantDestroyerBody.DisplayName: 毁灭者
 MutantDestroyerHead.DisplayName: 毁灭者
 MutantDestroyerTail.DisplayName: 毁灭者
@@ -716,3 +717,7 @@ HentaiSword.DisplayName: 洞察者
 HentaiSwordBlast.DisplayName: 洞察者爆炸
 HentaiSphereOkuu.DisplayName: 洞察者幻影球
 AbomRitualFTW.DisplayName: 憎恶结界FTW
+// MutantTrueEyeBolt.DisplayName: Mutant True Eye Bolt
+// MutantTrueEyeDeathrayProj.DisplayName: Mutant True Eye Deathray Proj
+// MutantTrueEyeSphereProj.DisplayName: Mutant True Eye Sphere Proj
+// BaseMutantSphere.DisplayName: Base Mutant Sphere

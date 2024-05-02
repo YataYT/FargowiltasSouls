@@ -198,11 +198,14 @@ namespace FargowiltasSouls.Content.Bosses.DeviBoss
 
             const int platinumToBribe = 10;
 
-            if (Phase == 0)
+            if (Main.rand.NextBool())
+                CombatText.NewText(new((int)NPC.Center.X, (int)NPC.Center.Y, 100, 100), Main.DiscoColor, ">.<", true, false);
+
+            if (Phase == 0) 
             {
                 NPC.TargetClosest();
                 if (NPC.timeLeft < 30)
-                    NPC.timeLeft = 30;
+                     NPC.timeLeft = 30;
 
                 if (NPC.Distance(Main.player[NPC.target].Center) < 2000)
                 {
