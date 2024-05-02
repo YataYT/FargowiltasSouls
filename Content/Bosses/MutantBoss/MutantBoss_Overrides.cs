@@ -242,6 +242,9 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
             EModeGlobalNPC.mutantBoss = NPC.whoAmI;
 
+            // Update AttackTimer to an ai value
+            AttackTimerAI = AttackTimer;
+
             NPC.direction = NPC.spriteDirection = MathF.Sign(Player.Center.X - NPC.Center.X);
 
             // Try to find a new target if the current one is very far away.
