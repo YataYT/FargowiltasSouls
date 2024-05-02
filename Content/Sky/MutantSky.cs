@@ -29,52 +29,61 @@ namespace FargowiltasSouls.Content.Sky
             bool useSpecialColor = false;
 
             // Only activated in Phase 2 and higher
-            if (FargoSoulsUtil.BossIsAlive(ref EModeGlobalNPC.mutantBoss, ModContent.NPCType<MutantBoss>()) && Main.npc[EModeGlobalNPC.mutantBoss].ai[0] > 1)
+            if (FargoSoulsUtil.BossIsAlive(ref EModeGlobalNPC.mutantBoss, ModContent.NPCType<MutantBoss>()) && Main.npc[EModeGlobalNPC.mutantBoss].ai[0] >= 2)
             {
                 intensity += increment;
                 lifeIntensity = Main.npc[EModeGlobalNPC.mutantBoss].ai[0] == 3 ? 1f : 1f - (float)Main.npc[EModeGlobalNPC.mutantBoss].life / Main.npc[EModeGlobalNPC.mutantBoss].lifeMax;
 
                 // ai[1] is his current attack
-                switch ((int)Main.npc[EModeGlobalNPC.mutantBoss].ai[1])
+                switch ((MutantBoss.BehaviorStates)Main.npc[EModeGlobalNPC.mutantBoss].ai[1])
                 {
                     case MutantBoss.BehaviorStates.FinalSpark:
                         // Only happens in masomode
                         if (Main.npc[EModeGlobalNPC.mutantBoss].ai[2] >= 420)
-                            ChangeColorIfDefault(FargoSoulsUtil.AprilFools ? new Color(255, 180, 50) : Color.Cyan);
+                            useSpecialColor = ChangeColorIfDefault(FargoSoulsUtil.AprilFools ? new Color(255, 180, 50) : Color.Cyan);
                         break;
 
-                    case 10: //p2 transition, smash to black
+                    // Phase 2 transition, smash to black
+                    case MutantBoss.BehaviorStates.Phase2Transition:
                         useSpecialColor = true;
                         specialColor = Color.Black;
                         specialColorLerp = 1f;
                         break;
 
-                    case 27: //twins
-                        ChangeColorIfDefault(Color.Red);
+                    // Mech Ray Fan
+                    case MutantBoss.BehaviorStates.MechRayFan:
+                        useSpecialColor = ChangeColorIfDefault(Color.Red);
                         break;
 
-                    case 36: //slime rain
+                    // Slime Rain
+                    case MutantBoss.BehaviorStates.SlimeRain:
                         if (WorldSavingSystem.MasochistModeReal && Main.npc[EModeGlobalNPC.mutantBoss].ai[2] > 180 * 3 - 60)
-                            ChangeColorIfDefault(Color.Blue);
+                            useSpecialColor = ChangeColorIfDefault(Color.Blue);
                         break;
 
-                    case 44: //empress
-                        ChangeColorIfDefault(Color.DeepPink);
+                    // Empress Sword Wave
+                    case MutantBoss.BehaviorStates.EmpressSwordWave: 
+                        useSpecialColor = ChangeColorIfDefault(Color.DeepPink);
                         break;
 
-                    case 48: //queen slime
-                        ChangeColorIfDefault(Color.Purple);
+                    /*
+                    // Queen Slime Rain
+                    case MutantBoss.BehaviorStates.QueenSlimeRain:
+                        useSpecialColor = ChangeColorIfDefault(Color.Purple);
                         break;
+                    */
 
                     default:
                         break;
                 }
 
+                // Cap the intensity at 1
                 if (intensity > 1f)
                     intensity = 1f;
             }
             else
             {
+                // Otherwise, slowly decrease all intensities to 0 and deactivate the effect
                 lifeIntensity -= increment;
                 if (lifeIntensity < 0f)
                     lifeIntensity = 0f;
@@ -96,6 +105,7 @@ namespace FargowiltasSouls.Content.Sky
                 }
             }
 
+            // If using a special color, gradually increase the intensity of it
             if (useSpecialColor)
             {
                 specialColorLerp += increment * 2;
@@ -104,6 +114,7 @@ namespace FargowiltasSouls.Content.Sky
             }
             else
             {
+                // Otherwise, gradually decrease it back to normal
                 specialColorLerp -= increment * 2;
                 if (specialColorLerp < 0)
                 {
@@ -133,8 +144,8 @@ namespace FargowiltasSouls.Content.Sky
         {
             if (specialColor == null)
                 specialColor = color;
-            if (specialColor != null && specialColor == color)
-                useSpecialColor = true;
+
+            return specialColor != null && specialColor == color;
         }
 
         public override void Draw(SpriteBatch spriteBatch, float minDepth, float maxDepth)
