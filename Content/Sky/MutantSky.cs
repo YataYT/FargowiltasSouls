@@ -28,23 +28,17 @@ namespace FargowiltasSouls.Content.Sky
 
             bool useSpecialColor = false;
 
-            if (FargoSoulsUtil.BossIsAlive(ref EModeGlobalNPC.mutantBoss, ModContent.NPCType<MutantBoss>())
-                && (Main.npc[EModeGlobalNPC.mutantBoss].ai[0] < 0 || Main.npc[EModeGlobalNPC.mutantBoss].ai[0] >= 10))
+            // Only activated in Phase 2 and higher
+            if (FargoSoulsUtil.BossIsAlive(ref EModeGlobalNPC.mutantBoss, ModContent.NPCType<MutantBoss>()) && Main.npc[EModeGlobalNPC.mutantBoss].ai[0] > 1)
             {
                 intensity += increment;
-                lifeIntensity = Main.npc[EModeGlobalNPC.mutantBoss].ai[0] < 0 ? 1f : 1f - (float)Main.npc[EModeGlobalNPC.mutantBoss].life / Main.npc[EModeGlobalNPC.mutantBoss].lifeMax;
+                lifeIntensity = Main.npc[EModeGlobalNPC.mutantBoss].ai[0] == 3 ? 1f : 1f - (float)Main.npc[EModeGlobalNPC.mutantBoss].life / Main.npc[EModeGlobalNPC.mutantBoss].lifeMax;
 
-                void ChangeColorIfDefault(Color color) //waits for bg to return to default first
+                // ai[1] is his current attack
+                switch ((int)Main.npc[EModeGlobalNPC.mutantBoss].ai[1])
                 {
-                    if (specialColor == null)
-                        specialColor = color;
-                    if (specialColor != null && specialColor == color)
-                        useSpecialColor = true;
-                }
-
-                switch ((int)Main.npc[EModeGlobalNPC.mutantBoss].ai[0])
-                {
-                    case -5:
+                    case MutantBoss.BehaviorStates.FinalSpark:
+                        // Only happens in masomode
                         if (Main.npc[EModeGlobalNPC.mutantBoss].ai[2] >= 420)
                             ChangeColorIfDefault(FargoSoulsUtil.AprilFools ? new Color(255, 180, 50) : Color.Cyan);
                         break;
@@ -132,6 +126,15 @@ namespace FargowiltasSouls.Content.Sky
             }
 
             return color;
+        }
+
+        // Wait for background to be default first
+        private bool ChangeColorIfDefault(Color color)
+        {
+            if (specialColor == null)
+                specialColor = color;
+            if (specialColor != null && specialColor == color)
+                useSpecialColor = true;
         }
 
         public override void Draw(SpriteBatch spriteBatch, float minDepth, float maxDepth)
