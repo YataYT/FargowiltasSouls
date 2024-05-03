@@ -19,7 +19,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         public override void SetDefaults()
         {
             base.SetDefaults();
-            Projectile.timeLeft = 200;
+            Projectile.timeLeft = 120;
         }
 
         // Set to -1 to make it non-homing

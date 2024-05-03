@@ -23,7 +23,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         public void MutantSword() {
             ref float swordsToSwing = ref MainAI1;
             ref float swingAngleLength = ref MainAI2;
-            ref float currentSwingAngle = ref MainAI3;
+            ref float currentSwingAngle = ref NPC_LAI0;
             ref float endOfLastSwingTime = ref MainAI4;
             ref float direction = ref MainAI5;
             ref float currentSwordsSwung = ref MainAI6;

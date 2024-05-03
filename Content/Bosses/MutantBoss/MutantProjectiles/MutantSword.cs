@@ -64,7 +64,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
                     Projectile.timeLeft = (int)TotalTime;
                 }
 
-                Vector2 offset = new Vector2(OffsetDistance, 0).RotatedBy(npc.ai[3] + InitialDirection);
+                Vector2 offset = new Vector2(OffsetDistance, 0).RotatedBy(npc.localAI[0] + InitialDirection);
                 Projectile.Center = npc.Center + offset;
             }
             else

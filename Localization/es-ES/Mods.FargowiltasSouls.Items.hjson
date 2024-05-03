@@ -337,7 +337,7 @@ MoltenEnchant: {
 	/* Tooltip:
 		'''
 		Ignite yourself while enemies are close
-		Enemies in the inferno ring take 25% more damage and are ignited
+		Enemies in the inferno ring take 20% more damage and are ignited
 		'They shall know the fury of hell' 
 		''' */
 }
@@ -861,7 +861,7 @@ NatureForce: {
 	/* Tooltip:
 		'''
 		[i:FargowiltasSouls/CrimsonEnchant] Heal back 50% of damage taken after not getting hit for 7 seconds, twice
-		[i:FargowiltasSouls/MoltenEnchant] Nearby enemies are ignited in a greater radius
+		[i:FargowiltasSouls/MoltenEnchant] Nearby enemies are ignited in a great radius
 		[i:FargowiltasSouls/RainEnchant] Spawns an umbrella that blocks projectiles from above
 		[i:FargowiltasSouls/FrostEnchant] Icicles will start to appear around you
 		[i:FargowiltasSouls/ChlorophyteEnchant] Summons a ring of leaf crystals to shoot at nearby enemies

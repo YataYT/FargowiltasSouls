@@ -75,7 +75,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             NPC.damage = 444;
             NPC.defense = 255;
             NPC.value = Item.buyPrice(7);
-            NPC.lifeMax = Main.expertMode ? 7700000 : 3500000;
+            NPC.lifeMax = Main.expertMode ? 770000 : 350000;
             NPC.HitSound = SoundID.NPCHit57;
             NPC.noGravity = true;
             NPC.noTileCollide = true;
@@ -188,6 +188,14 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             // Add Mutant Presence buff in Masomode
             if (MasochistMode && Main.LocalPlayer.active && !Main.LocalPlayer.dead && !Main.LocalPlayer.ghost)
                 Main.LocalPlayer.AddBuff(ModContent.BuffType<MutantPresenceBuff>(), 2);
+
+            // Ensure the arena stays active in P2 and above
+            if (EternityMode && CurrentPhase >= 2 && FargoSoulsUtil.ProjectileExists(CurrentRitualProjectile, ModContent.ProjectileType<MutantArena>()) == null)
+                CurrentRitualProjectile = Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Zero, ModContent.ProjectileType<MutantArena>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), 0f, Main.myPlayer, 0f, NPC.whoAmI);
+
+            // Ensure the aura stays active
+            if (FargoSoulsUtil.ProjectileExists(CurrentAuraProjectile, ModContent.ProjectileType<MutantAura>()) == null)
+                CurrentAuraProjectile = Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Zero, ModContent.ProjectileType<MutantAura>(), 0, 0f, Main.myPlayer, 0f, NPC.whoAmI);
         }
 
         private void EModeSpecialEffects()
@@ -237,15 +245,11 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             if (invalidTarget)
                 NPC.TargetClosest(false);
 
-            if (EternityMode && CurrentPhase == 2 && FargoSoulsUtil.ProjectileExists(CurrentRitualProjectile, ModContent.ProjectileType<MutantRitual>()) == null)
-                CurrentRitualProjectile = Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Zero, ModContent.ProjectileType<MutantRitual>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), 0f, Main.myPlayer, 0f, NPC.whoAmI);
-
+            
             EModeGlobalNPC.mutantBoss = NPC.whoAmI;
 
-            // Update AttackTimer to an ai value
-            AttackTimerAI = AttackTimer;
-
             NPC.direction = NPC.spriteDirection = MathF.Sign(Player.Center.X - NPC.Center.X);
+            ManageAuras();
 
             // Try to find a new target if the current one is very far away.
             if (!NPC.WithinRange(Target.Center, 4600f))
@@ -277,11 +281,16 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
             // Ensure that there is a valid state timer to get.
             if (StateMachine.StateStack.Count > 0)
+            {
+                // Update AttackTimer to an ai value
+                AttackTimerAI = AttackTimer;
                 AttackTimer++;
-
+                CurrentAttack = (float)StateMachine.StateStack.Peek().Identifier;
+            }
+                
             // DEBUG AREA
-            CurrentPhase = 1;
-            AuraCenter = NPC.Center;
+            //CurrentPhase = 1;
+            //AuraCenter = NPC.Center;
 
             //if (StateMachine.StateStack.Count > 0)  Main.NewText(StateMachine?.StateStack?.Peek()?.Identifier);
         }
@@ -316,11 +325,11 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         public override void OnKill() {
             base.OnKill();
 
-            if (!playerInvulTriggered && WorldSavingSystem.EternityMode) {
+            if (!playerInvulTriggered && EternityMode) {
                 Item.NewItem(NPC.GetSource_Loot(), NPC.Hitbox, ModContent.ItemType<PhantasmalEnergy>());
             }
 
-            if (WorldSavingSystem.EternityMode) {
+            if (EternityMode) {
                 if (Main.LocalPlayer.active) {
                     if (!Main.LocalPlayer.FargoSouls().Toggler.CanPlayMaso && Main.netMode != NetmodeID.Server)
                         Main.NewText(Language.GetTextValue($"Mods.{Mod.Name}.Message.MasochistModeUnlocked"), new Color(51, 255, 191, 0));
@@ -359,10 +368,6 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 if (NPC.frame.Y >= Main.npcFrameCount[NPC.type] * frameHeight)
                     NPC.frame.Y = 0;
             }
-        }
-
-        public override void BossHeadSpriteEffects(ref SpriteEffects spriteEffects) {
-            //spriteEffects = NPC.spriteDirection < 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally;
         }
 
         public override bool PreDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor) {

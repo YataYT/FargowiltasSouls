@@ -51,7 +51,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 ai2 = NPC.Center.X;
                 ai3 = NPC.Center.Y;
                 for (int i = 0; i < Main.maxProjectiles; i++) {
-                    if (Main.projectile[i].active && Main.projectile[i].type == ModContent.ProjectileType<MutantRitual>() && Main.projectile[i].ai[1] == NPC.whoAmI) {
+                    if (Main.projectile[i].active && Main.projectile[i].type == ModContent.ProjectileType<MutantArena>() && Main.projectile[i].ai[1] == NPC.whoAmI) {
                         ai2 = Main.projectile[i].Center.X;
                         ai3 = Main.projectile[i].Center.Y;
                         break;

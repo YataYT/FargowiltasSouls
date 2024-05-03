@@ -54,8 +54,8 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             if (CurrentPhase == 1 && MasochistMode)
                 rotationVelocity = MathHelper.Pi / 3840 * (AttackTimer - 300) * direction;
 
-            // Phase 1 changes
-            if (CurrentPhase == 1)
+            // Phase 2 changes
+            if (CurrentPhase == 2)
             {
                 rotationVelocity = MathHelper.Pi / 8 / 480 * AttackTimer * direction;
                 pauseAtStart = 60;

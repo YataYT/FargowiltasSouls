@@ -22,48 +22,45 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
     {
         #region Enums
 
-        // No stage clarified: Not sure, probably stage 2-3
-        // Stage 1: Refactor (replace values with yours)
-        // Stage 2: General refactoring - setting clear variable names, commenting, etc
-        // Stage 3: Total refactor/final touches (improved)
         public enum BehaviorStates {
             // General attacks (all 3 phases)
-            VoidRays,                       // Stage 2 Done
-            OkuuSpheres,                    // Stage 2 Done
-            BoundaryBulletHell,             // Stage 2 Done
+            VoidRays,
+            OkuuSpheres,
+            BoundaryBulletHell,
 
             // Phase 1 + 2 attacks
-            SpearTossPredictiveWithDestroyers,            // Stage 2 Done
-            SpearDashDirect,                // Pending
-            TrueEyeDive,                    // Stage 2 Done
-            MutantSword,                    // Pending
-            SpawnDestroyers,                // Stage 2 Done
+            SpearTossPredictiveWithDestroyers,
+            SpearDashDirect,
+            TrueEyeDive,
+            MutantSword,
+            SpawnDestroyers,
 
             // Phase 2 exclusive attacks
-            SpearTossDirect,                // Stage 2 Done
-            MechRayFan,                     // Stage 2 Done
-            SpawnFishrons,                  // Stage 2 Done
-            Nuke,                           // Stage 2 Done
-            SlimeRain,                      // Stage 1 Done
-            TwinRangsAndCrystals,           // Stage 1 Done
-            EmpressSwordWave,               // Stage 1 Done
-            SpearDashPredictive,            // Pending
-            PillarDunk,                     // Stage 1 Done
-            EoCStarSickles,                 // Stage 1 Done
+            SpearTossDirect,
+            MechRayFan,
+            SpawnFishrons,
+            Nuke,
+            SlimeRain,
+            TwinRangsAndCrystals,
+            EmpressSwordWave,
+            SpearDashPredictive,
+            PillarDunk,
+            EoCStarSickles,
 
             // Desperation attacks
-            FinalSpark,                     // Stage 1 Done
+            FinalSpark,
 
             // Intermediate states
             ResetCycle, // maybe this isnt needed
 
             // Phase transitions
-            Opening,                        // Not done
-            Phase2Transition,               // Not done
-            Phase3Transition,               // Not done
+            Opening,
+            Phase2Transition,
+            Phase3Transition,
+            Dying,
 
             // For the state machine
-            RefillAttacks,                  // Not implemented
+            RefillAttacks,
             Count
         }
 
@@ -130,6 +127,9 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         public int CurrentAuraProjectile;
 
         public float AuraScale = 1f;
+        public int Phase1SkipThreshold = 10;
+
+        public bool SkipPhase1 => WorldSavingSystem.skipMutantP1 >= Phase1SkipThreshold;
 
         public float EndTimeVariance;
 
@@ -161,6 +161,8 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         private ref float CurrentAttack => ref NPC.ai[1];
         private ref float AttackTimerAI => ref NPC.ai[2];
         private ref float NPC_AI3 => ref NPC.ai[3];
+
+        // Dedicated for projectiles that need to read information on an attack-to-attack basis
         private ref float NPC_LAI0 => ref NPC.localAI[0];
         private ref float NPC_LAI1 => ref NPC.localAI[1];
         private ref float NPC_LAI2 => ref NPC.localAI[2];

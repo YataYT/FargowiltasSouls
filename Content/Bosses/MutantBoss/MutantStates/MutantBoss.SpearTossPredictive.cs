@@ -168,14 +168,14 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             int wormCap = AdjustValueForDifficulty(7, 5, 3);
 
             // Movement
-            if (WorldSavingSystem.EternityMode)
+            if (EternityMode)
             {
                 Vector2 targetPos = Player.Center + NPC.DirectionFrom(Player.Center) * 500;
 
                 // Avoid crossing up the player
-                if (Math.Abs(targetPos.X - Player.Center.X) < 150)
+                if (MathF.Abs(targetPos.X - Player.Center.X) < 150)
                 {
-                    targetPos.X = Player.Center.X + 150 * Math.Sign(targetPos.X - Player.Center.X);
+                    targetPos.X = Player.Center.X + 150 * MathF.Sign(targetPos.X - Player.Center.X);
                     Movement(targetPos, 0.3f);
                 }
                 if (NPC.Distance(targetPos) > 50)

@@ -55,7 +55,8 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 startAttacking = 666;
                 NPC.velocity = NPC.velocity.SafeNormalize(Vector2.Zero) * 15f;
             }
-                
+
+            CurrentPhase = 1;
 
             if (AttackTimer % 5 == 0 && currentIndex < EdgyText.Count)
             {

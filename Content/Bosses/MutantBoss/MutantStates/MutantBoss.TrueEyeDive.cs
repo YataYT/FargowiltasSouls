@@ -62,7 +62,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 // Phase 2
                 else
                 {
-                    Vector2 targetPos = Player.Center + new Vector2(400 * MathF.Sign(Player.Center.X - NPC.Center.X), -400);
+                    Vector2 targetPos = Player.Center + new Vector2(400 * MathF.Sign(Player.Center.X - NPC.Center.X), 400);
                     Movement(targetPos, 1.2f);
 
                     // Start dive

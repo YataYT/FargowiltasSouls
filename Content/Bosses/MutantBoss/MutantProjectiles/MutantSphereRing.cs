@@ -17,7 +17,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 {
     public class MutantSphereRing : BaseMutantSphere
     {
-        protected virtual bool DieOutsideArena => MutantPhase != 0;
+        protected virtual bool DieOutsideArena => MutantPhase != 1;
 
         public override void SetStaticDefaults()
         {
@@ -64,8 +64,8 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             float fadeInTime = 10f;
             Projectile.Opacity = Utilities.InverseLerp(0f, fadeInTime, Timer);
             Projectile.scale = Utilities.InverseLerp(0f, fadeInTime, Timer);
-            //Projectile.Opacity = Projectile.scale = 1f;
-            /*
+            
+            // Die when outside of the arena
             if (DieOutsideArena)
             {
                 if (RitualID == -1)
@@ -74,7 +74,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                     RitualID = -2;
                     for (int i = 0; i < Main.maxProjectiles; i++)
                     {
-                        if (Main.projectile[i].active && Main.projectile[i].type == ModContent.ProjectileType<MutantRitual>())
+                        if (Main.projectile[i].active && Main.projectile[i].type == ModContent.ProjectileType<MutantArena>())
                         {
                             RitualID = i;
                             break;
@@ -82,10 +82,10 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                     }
                 }
 
-                Projectile ritual = FargoSoulsUtil.ProjectileExists(RitualID, ModContent.ProjectileType<MutantRitual>());
-                if (ritual != null && Projectile.Distance(ritual.Center) > 1200f)
+                Projectile ritual = FargoSoulsUtil.ProjectileExists(RitualID, ModContent.ProjectileType<MutantArena>());
+                if (ritual != null && Projectile.Distance(ritual.Center) > MutantArena.ArenaSize)
                     Projectile.Kill();
-            }*/
+            }
 
             // If in masomode and desperation phase, the player will get frozen on hit
             TryTimeStop();
@@ -97,7 +97,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 && FargoSoulsUtil.BossIsAlive(ref EModeGlobalNPC.mutantBoss, ModContent.NPCType<MutantBoss>()))
             {
                 // Only triggered in Maso + Desperation Phase
-                if (WorldSavingSystem.MasochistModeReal && MutantPhase == 2 && Projectile.Colliding(Projectile.Hitbox, Main.LocalPlayer.FargoSouls().GetPrecisionHurtbox()))
+                if (WorldSavingSystem.MasochistModeReal && Main.npc[EModeGlobalNPC.mutantBoss].ai[1] == (int)MutantBoss.BehaviorStates.FinalSpark && Projectile.Colliding(Projectile.Hitbox, Main.LocalPlayer.FargoSouls().GetPrecisionHurtbox()))
                 {
                     if (!Main.LocalPlayer.HasBuff(ModContent.BuffType<TimeFrozenBuff>()))
                         SoundEngine.PlaySound(new SoundStyle("FargowiltasSouls/Assets/Sounds/ZaWarudo"), Main.LocalPlayer.Center);

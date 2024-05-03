@@ -63,7 +63,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
                 for (int i = 0; i < Main.maxProjectiles; i++)
                 {
-                    if (Main.projectile[i].active && Main.projectile[i].type == ModContent.ProjectileType<MutantRitual>())
+                    if (Main.projectile[i].active && Main.projectile[i].type == ModContent.ProjectileType<MutantArena>())
                     {
                         ritualID = i;
                         break;
@@ -71,7 +71,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 }
             }
 
-            Projectile ritual = FargoSoulsUtil.ProjectileExists(ritualID, ModContent.ProjectileType<MutantRitual>());
+            Projectile ritual = FargoSoulsUtil.ProjectileExists(ritualID, ModContent.ProjectileType<MutantArena>());
             if (ritual != null && Projectile.Distance(ritual.Center) > 1200f) //despawn faster
                 Projectile.timeLeft = 0;
         }

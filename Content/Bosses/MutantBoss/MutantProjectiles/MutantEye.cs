@@ -52,7 +52,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             {
                 for (int i = 0; i < Main.maxProjectiles; i++)
                 {
-                    if (Main.projectile[i].active && Main.projectile[i].type == ModContent.ProjectileType<MutantRitual>())
+                    if (Main.projectile[i].active && Main.projectile[i].type == ModContent.ProjectileType<MutantArena>())
                     {
                         RitualID = i;
                         break;
@@ -79,10 +79,10 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             // Die if outside the arena (only applies to non-homing mutant eyes)
             if (DieOutsideArena)
             {
-                Projectile ritual = FargoSoulsUtil.ProjectileExists(RitualID, ModContent.ProjectileType<MutantRitual>());
+                Projectile ritual = FargoSoulsUtil.ProjectileExists(RitualID, ModContent.ProjectileType<MutantArena>());
 
                 // Despawn when the projectile reaches the arena boundary
-                if (ritual != null && Projectile.Distance(ritual.Center) > 1200f)
+                if (ritual != null && Projectile.Distance(ritual.Center) > MutantArena.ArenaSize)
                     Projectile.timeLeft = 0;
             }
 

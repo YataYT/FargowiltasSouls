@@ -75,7 +75,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             int shootTime = 360 + pauseBeforeFiring;
             int pauseAtEnd = 60;
             int fireRate = 10;
-            int totalAttackTime = pauseAtStart + shootTime + pauseAtEnd;
+            int totalAttackTime = shootTime + pauseAtEnd;
             float ringRotation = MathHelper.ToRadians(60) * (currentRotation - 45) / 240;
             int ringMax = MasochistMode ? 10 : 9;
             float ringSpeed = MasochistMode ? 11f : 10f;
@@ -109,6 +109,11 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             {
                 Vector2 targetPos = Player.Center + Player.SafeDirectionTo(NPC.Center) * 450f;
                 Movement(targetPos, 0.8f);
+
+                // When the NPC is close enough, proceed right away
+                if (NPC.Distance(targetPos) < 50)
+                    AttackTimer = pauseAtStart;
+
                 return;
             }
 

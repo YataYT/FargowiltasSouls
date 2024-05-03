@@ -21,33 +21,31 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             ref float rotation = ref MainAI3;
             ref float playerX = ref MainAI4;
             ref float playerY = ref MainAI5;
+            ref float endTime = ref MainAI0;
 
             // Don't move
             NPC.velocity = Vector2.Zero;
 
             // Amount of time in-between sword walls
-            int attackThreshold = MasochistMode ? 48 : 60;
-
-            // Number of sword wall barrages
+            int timeBetweenSwordWalls = MasochistMode ? 48 : 60;
             int timesToAttack = 4;
-
-            // Amount of time to start up
-            int startUp = 90;
+            int startUpTime = 90;
+            int firstSetTime = startUpTime + timeBetweenSwordWalls * timesToAttack;
 
             // Initialization
-            if (AttackTimer == 0) {
+            if (AttackTimer == 1) {
                 SoundEngine.PlaySound(SoundID.Roar, NPC.Center);
                 rotation = Main.rand.NextFloat(MathHelper.TwoPi);
             }
 
             // Summon sword wave
-            if (AttackTimer >= startUp && AttackTimer < startUp + attackThreshold * timesToAttack && --swordBarrageTimer < 0) {
+            if (AttackTimer >= startUpTime && AttackTimer < startUpTime + timeBetweenSwordWalls * timesToAttack && swordBarrageTimer < 0) {
                 // Reset sword attack timer
-                swordBarrageTimer = attackThreshold;
+                swordBarrageTimer = timeBetweenSwordWalls;
 
                 SoundEngine.PlaySound(SoundID.Item163, Player.Center);
 
-                // uhhhhhhhh
+                // Rotate
                 if (MathF.Abs(MathHelper.WrapAngle(NPC.DirectionFrom(Player.Center).ToRotation() - rotation)) > MathHelper.PiOver2)
                     rotation += MathHelper.Pi;
 
@@ -100,17 +98,25 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 NPC.netUpdate = true;
             }
 
-            int swordSwarmTime = startUp + attackThreshold * timesToAttack + 40;
+            // Second set of sword swarms
+            int swordSwarmTime = firstSetTime + 40;
+            int secondSwarmTime = swordSwarmTime + 30;
             if (AttackTimer == swordSwarmTime) {
                 MegaSwordSwarm(Player.Center);
                 playerX = Player.Center.X;
                 playerY = Player.Center.Y;
             }
 
-            if (MasochistMode && AttackTimer == swordSwarmTime + 30) {
-                for (int i = 0; i <= 1; i++)
+            // One more in Masomode
+            if (MasochistMode && AttackTimer == secondSwarmTime) {
+                for (int i = -1; i <= 1; i += 2)
                     MegaSwordSwarm(new Vector2(playerX, playerY) + 600 * i * rotation.ToRotationVector2());
             }
+
+            // Set the end time
+            endTime = MasochistMode ? secondSwarmTime + 60 : swordSwarmTime + 30;
+
+            swordBarrageTimer--;
         }
 
         private void SpawnEmpressSword(Vector2 pos, float ai0, float ai1, Vector2 vel) {
@@ -123,7 +129,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         private void MegaSwordSwarm(Vector2 target) {
             SoundEngine.PlaySound(SoundID.Item164, Player.Center);
 
-            float safeAngle = NPC.ai[3];
+            float safeAngle = MainAI3;
             float safeRange = MathHelper.ToRadians(10);
             int max = 60;
             for (int i = 0; i < max; i++) {

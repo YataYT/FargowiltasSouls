@@ -44,7 +44,6 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             AutoloadAsBehavior<EntityAIState<BehaviorStates>, BehaviorStates>.FillStateMachineBehaviors<ModNPC>(StateMachine, this);
 
             LoadTransition_ResetCycle();
-            LoadTransition_PhaseTwoTransition();
 
             #region Transition Registering
             // See Cursed Coffin code for a deeper explanation of how to do this part
@@ -64,6 +63,12 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                         Main.projectile[i].ai[2] = 69;
                 }
             });
+
+            // The moment Mutant enters Phase 2, begin the transition
+            StateMachine.ApplyToAllStatesExcept((state) =>
+            {
+                StateMachine.RegisterTransition(state, BehaviorStates.Phase2Transition, false, () => CurrentPhase < 2 && LifeRatio <= 0.5f);
+            }, BehaviorStates.Phase2Transition);
 
             // Spear Toss Predictive
             StateMachine.RegisterTransition(BehaviorStates.SpearTossPredictiveWithDestroyers, null, false, () => AttackTimer > MainAI5 && MainAI2 == MainAI3);
@@ -90,7 +95,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             StateMachine.RegisterTransition(BehaviorStates.MutantSword, null, false, () => MainAI1 != 0 && MainAI6 >= MainAI1);
 
             // Mech Ray Fan
-            StateMachine.RegisterTransition(BehaviorStates.MechRayFan, null, false, () => AttackTimer == 360);
+            StateMachine.RegisterTransition(BehaviorStates.MechRayFan, null, false, () => MainAI0 != 0 && AttackTimer > MainAI0);
 
             // Spawn Fishrons
             StateMachine.RegisterTransition(BehaviorStates.SpawnFishrons, null, false, () => AttackTimer == 360);
@@ -105,19 +110,19 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             StateMachine.RegisterTransition(BehaviorStates.TwinRangsAndCrystals, null, false, () => AttackTimer == 360);
 
             // Empress Sword Wave
-            StateMachine.RegisterTransition(BehaviorStates.EmpressSwordWave, null, false, () => AttackTimer == 360);
+            StateMachine.RegisterTransition(BehaviorStates.EmpressSwordWave, null, false, () => MainAI0 != 0 && AttackTimer > MainAI0);
 
             // Pillar Dunk
             StateMachine.RegisterTransition(BehaviorStates.PillarDunk, null, false, () => AttackTimer == 360);
 
             // EoC Star Sickles
-            StateMachine.RegisterTransition(BehaviorStates.EoCStarSickles, null, false, () => AttackTimer == 360);
+            StateMachine.RegisterTransition(BehaviorStates.EoCStarSickles, null, false, () => MainAI3 != 0 && AttackTimer > MainAI3);
 
             // Final Spark
             StateMachine.RegisterTransition(BehaviorStates.FinalSpark, null, false, () => AttackTimer == 360);
 
             // Phase 2 Transition
-            StateMachine.RegisterTransition(BehaviorStates.Phase2Transition, null, false, () => AttackTimer == 360);
+            StateMachine.RegisterTransition(BehaviorStates.Phase2Transition, null, false, () => MainAI3 != 0 && AttackTimer >= MainAI3, () => NPC.dontTakeDamage = false);
 
             #endregion Transition Registering
         }
@@ -127,6 +132,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             NPC.netUpdate = true;
             NPC.TargetClosest(false);
 
+            MainAI0 = 0;
             MainAI1 = 0;
             MainAI2 = 0;
             MainAI3 = 0;
@@ -134,6 +140,13 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             MainAI5 = 0;
             MainAI6 = 0;
             MainAI7 = 0;
+            MainAI8 = 0;
+            MainAI9 = 0;
+
+            NPC_LAI0 = 0;
+            NPC_LAI1 = 0;
+            NPC_LAI2 = 0;
+            NPC_LAI3 = 0;
 
             if (oldState != null && (P1Attacks.Contains(oldState.Identifier) || P2Attacks.Contains(oldState.Identifier) || P3Attacks.Contains(oldState.Identifier)))
                 LastAttackChoice = (int)oldState.Identifier;
@@ -148,6 +161,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
                 StateMachine.StateStack.Clear();
 
+                /*
                 StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.MutantSword]);
                 StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.BoundaryBulletHell]);
                 StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.VoidRays]);
@@ -155,6 +169,18 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.TrueEyeDive]);
                 StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.OkuuSpheres]);
                 StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.SpearTossPredictiveWithDestroyers]);
+                */
+
+                StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.TrueEyeDive]);
+                
+                if (CurrentPhase == 2)
+                {
+                    StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.EmpressSwordWave]);
+                    StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.EoCStarSickles]);
+                    StateMachine.StateStack.Push(StateMachine.StateRegistry[BehaviorStates.MechRayFan]);
+                }
+                    
+
                 return;
 
                 // Get the correct attack list, and remove the last attack used
@@ -171,18 +197,6 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                     StateMachine.StateStack.Push(StateMachine.StateRegistry[attackList[currentIndex]]);
                     indices.Remove(currentIndex);
                 }
-            });
-        }
-
-        public void LoadTransition_PhaseTwoTransition() {
-            // Transition hijack
-            StateMachine.AddTransitionStateHijack(originalState => {
-                if (CurrentPhase != 2 && LifeRatio <= 0.5f) {
-                    StateMachine.StateStack.Clear();
-                    return BehaviorStates.Phase2Transition;
-                }
-
-                return originalState;
             });
         }
     }

@@ -57,18 +57,29 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             }
 
             // The first few seconds of the attack is the preparation stage, and cuts off the rest of the function until the dashing is ready.
-            if (AttackTimer <= startTime)
+            if (AttackTimer < startTime)
             {
-                Vector2 targetPos = Player.Center;
-                
-                // If the NPC is below the player, offset the X to prevent the boss from flying straight through the player
-                if (NPC.Top.Y < Player.Bottom.Y)
-                    targetPos.X += 600f * Math.Sign(NPC.Center.X - Player.Center.X);
-                targetPos.Y += 400;
-                Movement(targetPos, 0.7f, false);
+                // Movement handling per phase
+                if (CurrentPhase == 0)
+                {
+                    Vector2 targetPos = Player.Center;
 
-                // So he dashes a bit sooner after the start time
-                dashDelayTimer = dashDelay / 4;
+                    // If the NPC is below the player, offset the X to prevent the boss from flying straight through the player
+                    if (NPC.Top.Y < Player.Bottom.Y)
+                        targetPos.X += 600f * Math.Sign(NPC.Center.X - Player.Center.X);
+                    targetPos.Y += 400;
+                    Movement(targetPos, 0.7f, false);
+                }
+                else
+                {
+                    Vector2 targetPos = Player.Center;
+                    targetPos.Y += 450f * MathF.Sign(NPC.Center.Y - Player.Center.Y);
+                    Movement(targetPos, 0.7f, false);
+
+                    // Quickly fly away if Mutant gets too close to the player
+                    if (NPC.Distance(Player.Center) < 200)
+                        Movement(NPC.Center + NPC.DirectionFrom(Player.Center), 1.4f);
+                }
 
                 return;
             }
@@ -78,14 +89,13 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 NPC.velocity *= 0.9f;
 
             // Reset the delay timer and dash
-            if (dashDelayTimer > dashDelay)
+            if (dashDelayTimer >= dashDelay && numDashesDone < numDashes)
             {
                 NPC.netUpdate = true;
                 isDashing = 69;
                 dashDelayTimer = 0;
                 float additionalSpeedP2 = IsPhaseOne ? 0 : 15;  // Speed boost in P2
                 numDashesDone++;
-
 
                 // Get crammed in one line (P1 has a tiny bit of predictiveness to it, P2 has additional speed)
                 NPC.velocity = NPC.DirectionTo(Target.Center + (IsPhaseOne ? Target.Velocity : Vector2.Zero)) * ((MasochistMode ? 45f : 30f) + additionalSpeedP2);
@@ -104,9 +114,10 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             if (isDashing > 0)
             {
                 NPC.direction = NPC.spriteDirection = Math.Sign(NPC.velocity.X);
+                dashTimer++;
 
                 // Reset values after dashing is over
-                if (++dashTimer > dashTime)
+                if (dashTimer > dashTime)
                 {
                     dashTimer = isDashing = 0;
 
