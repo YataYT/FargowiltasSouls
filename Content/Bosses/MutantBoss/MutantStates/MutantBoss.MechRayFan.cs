@@ -113,8 +113,8 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                     }
 
                     // Spawn normal set of lasers
-                    SpawnMechRayLaser(NPC.Center, startRotationInDegrees * laserSweepDirection + 180, rotation);
-                    SpawnMechRayLaser(NPC.Center, -startRotationInDegrees * laserSweepDirection, -rotation);
+                    SpawnMechRayLaser(NPC.Center, startRotationInDegrees * laserSweepDirection, rotation);
+                    SpawnMechRayLaser(NPC.Center, -startRotationInDegrees * laserSweepDirection + 180, -rotation);
 
                     // Spawn another set of lasers facing the other way in maso
                     if (MasochistMode) {
@@ -141,7 +141,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                     float maxVariance = MathHelper.ToRadians(varianceInDegrees);
                     Vector2 aimPoint = NPC.Center - Vector2.UnitY * laserSweepDirection * 600;
                     Vector2 spawnPos = aimPoint + spawnOffset * Vector2.UnitY.RotatedByRandom(maxVariance).RotatedBy(MathHelper.ToRadians(rotationInDegrees));
-                    Vector2 vel = 32f * Vector2.Normalize(aimPoint - spawnPos);
+                    Vector2 vel = 32f * (aimPoint - spawnPos).SafeNormalize(Vector2.One);
                     Projectile.NewProjectile(NPC.GetSource_FromThis(), spawnPos, vel, ModContent.ProjectileType<MutantGuardian>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage, 4f / 3f), 0f, Main.myPlayer);
                 }
             }
