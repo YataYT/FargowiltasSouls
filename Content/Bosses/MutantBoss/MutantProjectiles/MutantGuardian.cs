@@ -57,13 +57,6 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             }
         }
 
-        public ref float AI0 => ref Projectile.ai[0];
-        public ref float AI1 => ref Projectile.ai[1];
-        public ref float AI2 => ref Projectile.ai[2];
-        public ref float LAI0 => ref Projectile.localAI[0];
-        public ref float LAI1 => ref Projectile.localAI[1];
-        public ref float LAI2 => ref Projectile.localAI[2];
-
         public override void AI()
         {
             Projectile.frame = 2;
