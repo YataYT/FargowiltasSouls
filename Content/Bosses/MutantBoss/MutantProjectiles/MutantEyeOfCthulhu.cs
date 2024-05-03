@@ -22,7 +22,6 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
         public override void SetStaticDefaults()
         {
-            // DisplayName.SetDefault("Eye of Cthulhu");
             Main.projFrames[Projectile.type] = Main.npcFrameCount[NPCID.EyeofCthulhu];
             ProjectileID.Sets.TrailCacheLength[Projectile.type] = 12;
             ProjectileID.Sets.TrailingMode[Projectile.type] = 2;
@@ -38,18 +37,13 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             Projectile.ignoreWater = true;
             Projectile.aiStyle = -1;
             CooldownSlot = 1;
-
             Projectile.timeLeft = 216;
+            Projectile.alpha = 255;
 
             Projectile.FargoSouls().DeletionImmuneRank = 2;
-
-            Projectile.alpha = 255;
         }
 
-        public override bool CanHitPlayer(Player target)
-        {
-            return target.hurtCooldowns[1] == 0;
-        }
+        public override bool CanHitPlayer(Player target) => target.hurtCooldowns[1] == 0;
 
         public override void SendExtraAI(BinaryWriter writer)
         {
@@ -63,9 +57,9 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             Projectile.localAI[1] = reader.ReadSingle();
         }
 
-        private const float degreesOffset = 45f / 2;
-        private const float dashSpeed = 120f;
-        private const float baseDistance = 700f;
+        private const float DegreesOffset = 45f / 2;
+        private const float DashSpeed = 120f;
+        private const float BaseDistance = 700f;
 
         //private float goldScytheAngleOffset;
         //private float cyanScytheAngleOffset;
@@ -75,43 +69,48 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             return Projectile.ai[1] >= 120;
         }
 
-        bool spawned;
+        public override void OnSpawn()
+        {
+            SoundEngine.PlaySound(SoundID.ForceRoarPitched, Projectile.Center);
+
+            if (FargoSoulsUtil.HostCheck)
+                Projectile.NewProjectile(Terraria.Entity.InheritSource(Projectile), Projectile.Center, Vector2.Zero, ModContent.ProjectileType<GlowRing>(), 0, 0f, Main.myPlayer, -1, NPCID.EyeofCthulhu);
+        }
+
+        public ref float TargetIndex => ref Projectile.ai[0];
+        public ref float AI1 => ref Projectile.ai[1];
+        public ref float AI2 => ref Projectile.ai[2];
+        public ref float LAI0 => ref Projectile.localAI[0];
+        public ref float LAI1 => ref Projectile.localAI[1];
+        public ref float Timer => ref Projectile.localAI[2];
+
+        
 
         public override void AI()
         {
-            Player player = FargoSoulsUtil.PlayerExists(Projectile.ai[0]);
-            if (player == null)
+            // Retrieve the target, or die if they no longer exist
+            Player target = FargoSoulsUtil.PlayerExists(TargetIndex);
+            if (target == null)
             {
                 Projectile.Kill();
                 return;
             }
 
-            void SpawnProjectile(Vector2 position)
+            // Charge-up phase
+            if (Timer < 120)
             {
-                float accel = 0.03f;
+                // Fade in
+                Projectile.alpha -= 8;
+                if (Projectile.alpha < 0)
+                    Projectile.alpha = 0;
 
-                Vector2 target = new(Projectile.localAI[0], Projectile.localAI[1]);// + 150f * Vector2.UnitX.RotatedBy(cyanScytheAngleOffset);
-                target += 180 * Projectile.SafeDirectionTo(target).RotatedBy(MathHelper.PiOver2);
+                // Stay with the player
+                Projectile.position += target.velocity / 2f;
 
-                float angle = Projectile.SafeDirectionTo(target).ToRotation();
-
-                int p = Projectile.NewProjectile(Terraria.Entity.InheritSource(Projectile), position, Vector2.Zero, ModContent.ProjectileType<MutantScythe1>(), Projectile.damage, 0, Main.myPlayer, accel, angle);
-                if (p != Main.maxProjectiles)
-                {
-                    Main.projectile[p].timeLeft = Projectile.timeLeft + 180 + 30 + 150; //+ 60 + 240;
-                    if (WorldSavingSystem.MasochistModeReal)
-                        Main.projectile[p].timeLeft -= 30;
-                }
-            };
-
-            if (!spawned)
-            {
-                spawned = true;
-
-                SoundEngine.PlaySound(SoundID.ForceRoarPitched, Projectile.Center);
-
-                if (FargoSoulsUtil.HostCheck)
-                    Projectile.NewProjectile(Terraria.Entity.InheritSource(Projectile), Projectile.Center, Vector2.Zero, ModContent.ProjectileType<GlowRing>(), 0, 0f, Main.myPlayer, -1, NPCID.EyeofCthulhu);
+                float rangeModifier = MathHelper.Clamp(AI1 * 1.5f / 120f, 0.25f, 1f);
+                Vector2 targetPos = target.Center + Projectile.DirectionFrom(target.Center).RotatedBy(MathHelper.ToRadians(20)) * BaseDistance * rangeModifier;
+                float speedModifier = 0.6f;
+                
             }
 
             if (++Projectile.ai[1] < 120)
@@ -233,6 +232,24 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             if (Projectile.frame < 3)
                 Projectile.frame = 3;
         }
+
+        private void SpawnProjectile(Player player, Vector2 position)
+        {
+            float accel = 0.03f;
+
+            Vector2 target = new(Projectile.localAI[0], Projectile.localAI[1]);// + 150f * Vector2.UnitX.RotatedBy(cyanScytheAngleOffset);
+            target += 180 * Projectile.SafeDirectionTo(target).RotatedBy(MathHelper.PiOver2);
+
+            float angle = Projectile.SafeDirectionTo(target).ToRotation();
+
+            int p = Projectile.NewProjectile(Terraria.Entity.InheritSource(Projectile), position, Vector2.Zero, ModContent.ProjectileType<MutantScythe1>(), Projectile.damage, 0, Main.myPlayer, accel, angle);
+            if (p != Main.maxProjectiles)
+            {
+                Main.projectile[p].timeLeft = Projectile.timeLeft + 180 + 30 + 150; //+ 60 + 240;
+                if (WorldSavingSystem.MasochistModeReal)
+                    Main.projectile[p].timeLeft -= 30;
+            }
+        };
 
         public override void OnHitPlayer(Player target, Player.HurtInfo info)
         {
