@@ -108,6 +108,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
         }
 
         public ref float CurrentRotation => ref Projectile.ai[0];
+        public ref float MutantIndex => ref Projectile.ai[1];
 
         public override void AI()
         {

@@ -17,7 +17,6 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
         public override void SetStaticDefaults()
         {
-            // DisplayName.SetDefault("Celestial Fragment");
             Main.projFrames[Projectile.type] = 4;
         }
 
@@ -34,57 +33,70 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             CooldownSlot = 1;
         }
 
-        private int ritualID = -1;
+        public ref float AI0 => ref Projectile.ai[0];
+        public ref float AI1 => ref Projectile.ai[1];
+        public ref float AI2 => ref Projectile.ai[2];
+        public ref float LAI0 => ref Projectile.localAI[0];
+        public ref float LAI1 => ref Projectile.localAI[1];
+        public ref float RitualID => ref Projectile.localAI[2];
 
         public override void AI()
         {
+            // Slow down
             Projectile.velocity *= 0.985f;
             Projectile.rotation += Projectile.velocity.X / 30f;
-            Projectile.frame = (int)Projectile.ai[0];
+            Projectile.frame = (int)AI0;
+
             if (Main.rand.NextBool(15))
             {
-                var type = (int)Projectile.ai[0] switch
+                var type = (int)AI0 switch
                 {
                     0 => 242,
                     1 => 127,
                     2 => 229,
                     _ => 135,
                 };
-                Dust dust = Main.dust[Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, type, 0f, 0f, 0, new Color(), 1f)];
+                Dust dust = Main.dust[Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, type)];
                 dust.velocity *= 4f;
                 dust.fadeIn = 1f;
                 dust.scale = 1f + Main.rand.NextFloat() + Main.rand.Next(4) * 0.3f;
                 dust.noGravity = true;
             }
 
-            if (ritualID == -1) //identify the ritual CLIENT SIDE
+            // Identify the ritual client-side
+            if (RitualID == -1)
             {
-                ritualID = -2; //if cant find it, give up and dont try every tick
+                // Give up after the first try
+                RitualID = -2;
 
                 for (int i = 0; i < Main.maxProjectiles; i++)
                 {
                     if (Main.projectile[i].active && Main.projectile[i].type == ModContent.ProjectileType<MutantArena>())
                     {
-                        ritualID = i;
+                        RitualID = i;
                         break;
                     }
                 }
             }
 
-            Projectile ritual = FargoSoulsUtil.ProjectileExists(ritualID, ModContent.ProjectileType<MutantArena>());
-            if (ritual != null && Projectile.Distance(ritual.Center) > 1200f) //despawn faster
+            // Die when outside the ritual
+            Projectile ritual = FargoSoulsUtil.ProjectileExists(RitualID, ModContent.ProjectileType<MutantArena>());
+            if (ritual != null && Projectile.Distance(ritual.Center) > 1200f)
                 Projectile.timeLeft = 0;
         }
 
         public override void OnKill(int timeLeft)
         {
-            var type = (int)Projectile.ai[0] switch
+            // Identify the dust type
+            var type = (int)AI0 switch
             {
                 0 => 242,
                 1 => 127,
                 2 => 229,
                 _ => 135,
             };
+
+            // Dust!!
             for (int i = 0; i < 20; i++)
             {
                 Dust dust = Main.dust[Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, type, 0f, 0f, 0, new Color(), 1f)];
@@ -101,12 +113,14 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             target.AddBuff(ModContent.BuffType<CurseoftheMoonBuff>(), 360);
             if (WorldSavingSystem.EternityMode)
                 target.AddBuff(ModContent.BuffType<MutantFangBuff>(), 180);
-            switch ((int)Projectile.ai[0])
+
+            // Pillar-specific debuffs
+            switch ((int)AI0)
             {
-                case 0: target.AddBuff(ModContent.BuffType<ReverseManaFlowBuff>(), 180); break; //nebula
-                case 1: target.AddBuff(ModContent.BuffType<AtrophiedBuff>(), 180); break; //solar
-                case 2: target.AddBuff(ModContent.BuffType<JammedBuff>(), 180); break; //vortex
-                default: target.AddBuff(ModContent.BuffType<AntisocialBuff>(), 180); break; //stardust
+                case 0: target.AddBuff(ModContent.BuffType<ReverseManaFlowBuff>(), 180); break; // Nebula
+                case 1: target.AddBuff(ModContent.BuffType<AtrophiedBuff>(), 180); break; // Solar
+                case 2: target.AddBuff(ModContent.BuffType<JammedBuff>(), 180); break; // Vortex
+                default: target.AddBuff(ModContent.BuffType<AntisocialBuff>(), 180); break; // Stardust
             }
         }
 
@@ -117,14 +131,13 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
         public override bool PreDraw(ref Color lightColor)
         {
-            Texture2D texture = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value;
-            Vector2 drawPosition = Projectile.Center - Main.screenPosition;
-            int num156 = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value.Height / Main.projFrames[Projectile.type]; //ypos of lower right corner of sprite to draw
-            int y3 = num156 * Projectile.frame; //ypos of upper left corner of sprite to draw
-            Rectangle rectangle = new(0, y3, texture.Width, num156);
-            Vector2 origin2 = rectangle.Size() / 2f;
-            Color color = Projectile.GetAlpha(lightColor);
-            Main.EntitySpriteDraw(texture, drawPosition, rectangle, color, Projectile.rotation, origin2, Projectile.scale, SpriteEffects.None, 0);
+            Texture2D tex = ModContent.Request<Texture2D>(Texture).Value;
+            int frameHeight = tex.Height / Main.projFrames[Projectile.type];
+            Rectangle rect = new(0, frameHeight * Projectile.frame, tex.Width, frameHeight);
+
+            Main.spriteBatch.Draw(tex, Projectile.Center - Main.screenPosition, rect, Projectile.GetAlpha(lightColor),
+                Projectile.rotation, rect.Size() / 2f, Projectile.scale, SpriteEffects.None, 0f);
+
             return false;
         }
     }

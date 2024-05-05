@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -40,12 +41,9 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             Projectile.FargoSouls().DeletionImmuneRank = 1;
         }
 
-        public override bool CanHitPlayer(Player target)
-        {
-            return target.hurtCooldowns[1] == 0;
-        }
+        public override bool CanHitPlayer(Player target) => target.hurtCooldowns[1] == 0;
 
-        public override void OnSpawn()
+        public override void OnSpawn(IEntitySource source)
         {
             Projectile.rotation = Main.rand.NextFloat(0, MathHelper.TwoPi);
             Projectile.hide = false;
@@ -92,7 +90,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
         public override bool PreDraw(ref Color lightColor)
         {
-            Utilities.GetAfterimagesCentered(Projectile, smth);
+            Utilities.DrawAfterimagesCentered(Projectile, 2, lightColor);
 
             return false;
         }

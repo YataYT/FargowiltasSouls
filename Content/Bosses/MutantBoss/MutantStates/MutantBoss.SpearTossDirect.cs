@@ -48,19 +48,29 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
             // Throw spear
             if (++spearAttackTimer > windUpTime + fireRate) {
-                NPC.netUpdate = true;
                 spearAttackTimer = windUpTime;
                 spearsThrown++;
 
-                SpearTossDirectAttack();
+                // This edge case makes things a bit convoluted, but basically end the attack shortly after the last spear is thrown.
+                // In masomode however, the spear is thrown right as he transitions into the next attack
+                if (spearsThrown <= maxSpearsThrown || MasochistMode)
+                    SpearTossDirectAttack();
             }
+            else if (spearAttackTimer == windUpTime + 1)
+            {
+                if (spearsThrown > 0 && (spearsThrown <= maxSpearsThrown || MasochistMode) && HostCheck)
+                    Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Zero, ModContent.ProjectileType<MutantSpearAim>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), 0f, Main.myPlayer, NPC.whoAmI, 0, fireRate);
+            }
+            else if (AttackTimer == 1)
+                if (HostCheck)
+                    Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Zero, ModContent.ProjectileType<MutantSpearAim>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), 0f, Main.myPlayer, NPC.whoAmI, 0, windUpTime + fireRate);
         }
 
         private void SpearTossDirectAttack() {
             if (HostCheck) {
                 Vector2 vel = NPC.DirectionTo(Player.Center) * 30f;
-                Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Normalize(vel), ModContent.ProjectileType<MutantDeathray>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage, 0.8f), 0f, Main.myPlayer);
-                Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, -Vector2.Normalize(vel), ModContent.ProjectileType<MutantDeathray>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage, 0.8f), 0f, Main.myPlayer);
+                Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Normalize(vel), ModContent.ProjectileType<MutantDeathray>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage, 0.8f), 0f, Main.myPlayer, 180);
+                Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, -Vector2.Normalize(vel), ModContent.ProjectileType<MutantDeathray>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage, 0.8f), 0f, Main.myPlayer, 180);
                 Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, vel, ModContent.ProjectileType<MutantSpearThrown>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), 0f, Main.myPlayer, NPC.target);
             }
         }

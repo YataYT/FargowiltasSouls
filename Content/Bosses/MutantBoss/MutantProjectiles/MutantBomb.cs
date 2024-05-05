@@ -40,7 +40,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
 
         public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
         {
-            return Utilities.CircularHitboxCollision(Projectile.Center, Projectile.width * Projectile.scale, targetHitbox);
+            return Utilities.CircularHitboxCollision(Projectile.Center, Projectile.width * Projectile.scale * 0.5f, targetHitbox);
 
             int clampedX = projHitbox.Center.X - targetHitbox.Center.X;
             int clampedY = projHitbox.Center.Y - targetHitbox.Center.Y;

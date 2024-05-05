@@ -98,30 +98,33 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
                 Projectile.Center = MutantBoss.Center + MutantBoss.velocity;
 
                 // If it's the final dash of a predictive spear dash or it's masomode
-                if (Variant == -1 && Timer % 2 == 0)
+                if (Variant <= -1)
                 {
-                    for (int i = -1; i <= 1; i += 2)
+                    if (Variant == -2 && Timer % 2 == 0)
                     {
-                        if (FargoSoulsUtil.HostCheck)
+                        for (int i = -1; i <= 1; i += 2)
                         {
-                            int p = Projectile.NewProjectile(Terraria.Entity.InheritSource(Projectile), Projectile.Center, 16f * Vector2.Normalize(MutantBoss.velocity).RotatedBy(MathHelper.PiOver2 * i),
-                            ModContent.ProjectileType<MutantSphereSmall>(), Projectile.damage, 0f, Projectile.owner, -1);
-                            if (p != Main.maxProjectiles)
-                                Main.projectile[p].timeLeft = 15;
+                            if (FargoSoulsUtil.HostCheck)
+                            {
+                                int p = Projectile.NewProjectile(Terraria.Entity.InheritSource(Projectile), Projectile.Center, 16f * Vector2.Normalize(MutantBoss.velocity).RotatedBy(MathHelper.PiOver2 * i),
+                                ModContent.ProjectileType<MutantSphereSmall>(), Projectile.damage, 0f, Projectile.owner, -1);
+                                if (p != Main.maxProjectiles)
+                                    Main.projectile[p].timeLeft = 15;
+                            }
                         }
                     }
-                }
-                // If it's not the special variant and masomode is on, always use this dash
-                else if (WorldSavingSystem.MasochistModeReal && Timer % 3 == 0)
-                {
-                    for (int i = -1; i <= 1; i += 2)
+                    // If it's not the special variant and masomode is on, always use this dash
+                    else if (WorldSavingSystem.MasochistModeReal && Timer % 3 == 0)
                     {
-                        if (FargoSoulsUtil.HostCheck)
+                        for (int i = -1; i <= 1; i += 2)
                         {
-                            int p = Projectile.NewProjectile(Terraria.Entity.InheritSource(Projectile), Projectile.Center, 16f / 2f * Vector2.Normalize(MutantBoss.velocity).RotatedBy(MathHelper.PiOver2 * i),
-                            ModContent.ProjectileType<MutantSphereSmall>(), Projectile.damage, 0f, Projectile.owner, -1);
-                            if (p != Main.maxProjectiles)
-                                Main.projectile[p].timeLeft = 15;
+                            if (FargoSoulsUtil.HostCheck)
+                            {
+                                int p = Projectile.NewProjectile(Terraria.Entity.InheritSource(Projectile), Projectile.Center, 16f / 2f * Vector2.Normalize(MutantBoss.velocity).RotatedBy(MathHelper.PiOver2 * i),
+                                ModContent.ProjectileType<MutantSphereSmall>(), Projectile.damage, 0f, Projectile.owner, -1);
+                                if (p != Main.maxProjectiles)
+                                    Main.projectile[p].timeLeft = 15;
+                            }
                         }
                     }
                 }

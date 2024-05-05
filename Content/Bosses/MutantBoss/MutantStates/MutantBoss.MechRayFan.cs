@@ -67,7 +67,14 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             // Prepare for the attack at the end of prep time, otherwise return early if prep isn't done yet
             if ((AttackTimer >= prepTime || MasochistMode) && NPC.Distance(targetPos) < 64 && attackStartTime == 0)
             {
+                // Signal that the real attack is ready
                 attackStartTime = AttackTimer;
+                if (attackStartTime < prepTime)
+                    attackStartTime = prepTime;
+
+                if (AttackTimer < attackStartTime)
+                    AttackTimer = (int)attackStartTime;
+
                 SoundEngine.PlaySound(SoundID.Roar, NPC.Center);
             }
             else if (AttackTimer < prepTime)
@@ -83,7 +90,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             // Initialize with making the red telegraph
             if (AttackTimer == attackStartTime + 1 && HostCheck) {
                 int max = 7;
-                for (int i = 0; i < 7; i++) {
+                for (int i = 0; i <= 7; i++) {
                     Vector2 dir = Vector2.UnitX.RotatedBy(laserSweepDirection * i * MathHelper.Pi / max) * 6;
                     Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center + dir, Vector2.Zero, ModContent.ProjectileType<MutantGlowything>(),
                         0, 0f, Main.myPlayer, dir.ToRotation(), NPC.whoAmI);
@@ -107,7 +114,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                     // Method to spawn a red laser
                     void SpawnMechRayLaser(Vector2 pos, float angleInDegrees, float turnRotation) {
                         int p = Projectile.NewProjectile(NPC.GetSource_FromThis(), pos, MathHelper.ToRadians(angleInDegrees).ToRotationVector2(),
-                                        ModContent.ProjectileType<MutantDeathray3>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), 0, Main.myPlayer, turnRotation, NPC.whoAmI);
+                                        ModContent.ProjectileType<MutantMechDeathray>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), 0, Main.myPlayer, turnRotation, NPC.whoAmI);
                         if (p != Main.maxProjectiles && Main.projectile[p].timeLeft > timeBeforeAttackEnds)
                             Main.projectile[p].timeLeft = timeBeforeAttackEnds;
                     }

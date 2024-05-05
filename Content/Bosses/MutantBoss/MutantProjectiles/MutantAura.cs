@@ -95,7 +95,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
             // Glow texture
             Texture2D glow = ModContent.Request<Texture2D>("FargowiltasSouls/Content/Bosses/MutantBoss/MutantProjectiles/MutantSphereGlow").Value;
             Rectangle glowRect = new(0, 0, glow.Width, glow.Height);
-            Color glowColor = (FargoSoulsUtil.AprilFools ? Color.Red : new Color(196, 247, 255, 0)) * 0.4f;
+            Color glowColor = (FargoSoulsUtil.AprilFools ? Color.Red : new Color(196, 247, 255, 0)) * 0.6f;
 
             // Draw the entire arena
             int numEyes = 7;
@@ -128,7 +128,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
 
         public override Color? GetAlpha(Color lightColor)
         {
-            return Color.White * Projectile.Opacity * 0.3f;
+            return Color.White * Projectile.Opacity * 0.8f;
         }
     }
 }

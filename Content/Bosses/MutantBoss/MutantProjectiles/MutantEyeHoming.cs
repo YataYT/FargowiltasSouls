@@ -15,6 +15,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         public override void SetDefaults()
         {
             base.SetDefaults();
+
             Projectile.timeLeft = 900;
         }
 

@@ -7,7 +7,7 @@ using Terraria.ModLoader;
 
 namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
 {
-    public class MutantScythe2 : MutantScythe1
+    public class MutantSickleGold : MutantSickleCyan
     {
         public override string Texture => FargoSoulsUtil.AprilFools ?
             "FargowiltasSouls/Content/Bosses/MutantBoss/AltTextures/MutantScythe1_April" :
@@ -15,7 +15,6 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
 
         public override void SetStaticDefaults()
         {
-            // DisplayName.SetDefault("Mutant Sickle");
             ProjectileID.Sets.TrailCacheLength[Projectile.type] = 10;
             ProjectileID.Sets.TrailingMode[Projectile.type] = 2;
         }
@@ -29,22 +28,18 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
 
         public override void PostAI()
         {
-            if (Projectile.timeLeft == 180) //draw attention to myself
+            // Spawn dust to draw attention to itself
+            if (Projectile.timeLeft == 180)
             {
                 for (int i = 0; i < 20; i++)
                 {
-                    int d = Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, DustID.GemTopaz, 0, 0, 0, default, 2.5f);
+                    int d = Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, DustID.GemTopaz, Scale: 2.5f);
                     Main.dust[d].noGravity = true;
                     Main.dust[d].velocity *= 6f;
                 }
                 if (FargoSoulsUtil.HostCheck)
                     Projectile.NewProjectile(Terraria.Entity.InheritSource(Projectile), Projectile.Center, Vector2.Zero, ModContent.ProjectileType<IronParry>(), 0, 0f, Main.myPlayer);
             }
-        }
-
-        public override void DrawBehind(int index, List<int> behindNPCsAndTiles, List<int> behindNPCs, List<int> behindProjectiles, List<int> overPlayers, List<int> overWiresUI)
-        {
-
         }
     }
 }

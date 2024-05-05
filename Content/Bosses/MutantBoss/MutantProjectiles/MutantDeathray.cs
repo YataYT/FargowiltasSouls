@@ -60,7 +60,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 return;
             }
 
-            // Oscillate the scale a bit
+            // Adjust scale
             Projectile.scale = MathF.Sin(Timer * MathHelper.Pi / Duration) * 4f;
             if (Projectile.scale > 1)
                 Projectile.scale = 1;

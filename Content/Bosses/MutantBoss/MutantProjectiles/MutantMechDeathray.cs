@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using Terraria;
 using Terraria.Audio;
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -27,19 +28,21 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
             CooldownSlot = -1; //iframe interaction with prime lol
         }
 
-        public override void OnSpawn()
+        public override void OnSpawn(IEntitySource source)
         {
             // Setting default value (I don't like BaseDeathray)
             if (MaxTime == 0)
                 MaxTime = 270;
         }
 
+        private float DisplayMaxTime;
+
         public ref float AngleIncrement => ref Projectile.ai[0];
         public ref float MutantIndex => ref Projectile.ai[1];
         public ref float MaxTime => ref Projectile.ai[2];
         public ref float Timer => ref Projectile.localAI[0];
         public ref float LaserLength => ref Projectile.localAI[1];
-        public ref float DisplayMaxTime => ref Projectile.localAI[2];
+        public ref float LAI2 => ref Projectile.localAI[2];
 
         public override void AI()
         {
@@ -50,7 +53,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
                 Projectile.velocity = -Vector2.UnitY;
 
             // Determine how much to decelerate
-            float decelerationValue = WorldSavingSystem.MasochistModeReal ? 0.9716f : 0.9712f;
+            float decelerationValue = WorldSavingSystem.MasochistModeReal ? 0.9710f : 0.9704f;
 
             if (Timer == 0)
             {
@@ -66,18 +69,19 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
                 return;
             }
 
-            // Adjust scale
+            // Adjust scale and make 
             Projectile.scale = MathF.Sin(Timer * MathHelper.Pi / DisplayMaxTime) * 6f;
             if (Projectile.scale > 1f)
                 Projectile.scale = 1f;
 
-            // Update the deathray angle
+            // Update the deathray angle and length
             float currentAngle = Projectile.velocity.ToRotation();
             if (Timer > 45f && Timer < MaxTime - 120f)
                 AngleIncrement *= decelerationValue;
             currentAngle += AngleIncrement;
             Projectile.rotation = currentAngle - MathHelper.PiOver2;
             Projectile.velocity = currentAngle.ToRotationVector2();
+            LaserLength = 1500f;
 
             // Dust!!!
             if (Main.rand.NextBool(5))

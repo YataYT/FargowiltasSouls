@@ -70,9 +70,9 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             BehaviorStates.OkuuSpheres,
             BehaviorStates.BoundaryBulletHell,
             BehaviorStates.SpearTossPredictiveWithDestroyers,
-            //BehaviorStates.SpearDashDirect,
+            BehaviorStates.SpearDashDirect,
             BehaviorStates.TrueEyeDive,
-            //BehaviorStates.MutantSword
+            BehaviorStates.MutantSword
         };
 
         private readonly List<BehaviorStates> P2Attacks = new()
@@ -81,18 +81,17 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             BehaviorStates.OkuuSpheres,
             BehaviorStates.BoundaryBulletHell,
             BehaviorStates.SpearTossPredictiveWithDestroyers,
-            //BehaviorStates.SpearDashDirect,
+            BehaviorStates.SpearDashDirect,
             BehaviorStates.TrueEyeDive,
-            //BehaviorStates.MutantSword,
+            BehaviorStates.MutantSword,
             BehaviorStates.SpearTossDirect,
-            BehaviorStates.SpawnDestroyers,
             BehaviorStates.MechRayFan,
             BehaviorStates.SpawnFishrons,
             BehaviorStates.Nuke,
             BehaviorStates.SlimeRain,
             BehaviorStates.TwinRangsAndCrystals,
             BehaviorStates.EmpressSwordWave,
-            //BehaviorStates.SpearDashPredictive,
+            BehaviorStates.SpearDashPredictive,
             BehaviorStates.PillarDunk,
             BehaviorStates.EoCStarSickles
         };
@@ -128,6 +127,8 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
         public float AuraScale = 1f;
         public int Phase1SkipThreshold = 10;
+        public bool DoLifeDrain = false;
+        public bool DroppedSummon = false;
 
         public bool SkipPhase1 => WorldSavingSystem.skipMutantP1 >= Phase1SkipThreshold;
 

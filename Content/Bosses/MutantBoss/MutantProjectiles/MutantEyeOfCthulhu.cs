@@ -9,6 +9,7 @@ using System;
 using System.IO;
 using Terraria;
 using Terraria.Audio;
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -69,8 +70,10 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             return Projectile.ai[1] >= 120;
         }
 
-        public override void OnSpawn()
+        public override void OnSpawn(IEntitySource source)
         {
+            Projectile.frame = 3;
+
             SoundEngine.PlaySound(SoundID.ForceRoarPitched, Projectile.Center);
 
             if (FargoSoulsUtil.HostCheck)
@@ -78,11 +81,11 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         }
 
         public ref float TargetIndex => ref Projectile.ai[0];
-        public ref float AI1 => ref Projectile.ai[1];
+        public ref float Timer => ref Projectile.ai[1];
         public ref float AI2 => ref Projectile.ai[2];
-        public ref float LAI0 => ref Projectile.localAI[0];
-        public ref float LAI1 => ref Projectile.localAI[1];
-        public ref float Timer => ref Projectile.localAI[2];
+        public ref float CenterX => ref Projectile.localAI[0];
+        public ref float CenterY => ref Projectile.localAI[1];
+        public ref float LAI2 => ref Projectile.localAI[2];
 
         
 
@@ -96,7 +99,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 return;
             }
 
-            // Charge-up phase
+            // Charge-up and idle movement phase
             if (Timer < 120)
             {
                 // Fade in
@@ -107,29 +110,11 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 // Stay with the player
                 Projectile.position += target.velocity / 2f;
 
-                float rangeModifier = MathHelper.Clamp(AI1 * 1.5f / 120f, 0.25f, 1f);
+                // Movement
+                float rangeModifier = MathHelper.Clamp(Timer * 1.5f / 120f, 0.25f, 1f);
                 Vector2 targetPos = target.Center + Projectile.DirectionFrom(target.Center).RotatedBy(MathHelper.ToRadians(20)) * BaseDistance * rangeModifier;
                 float speedModifier = 0.6f;
-                
-            }
-
-            if (++Projectile.ai[1] < 120)
-            {
-                Projectile.alpha -= 8;
-                if (Projectile.alpha < 0)
-                    Projectile.alpha = 0;
-
-                Projectile.position += player.velocity / 2f;
-
-                float rangeModifier = Projectile.ai[1] * 1.5f / 120f;
-                if (rangeModifier < 0.25f)
-                    rangeModifier = 0.25f;
-                if (rangeModifier > 1f)
-                    rangeModifier = 1f;
-                Vector2 target = player.Center + Projectile.DirectionFrom(player.Center).RotatedBy(MathHelper.ToRadians(20)) * baseDistance * rangeModifier;
-
-                float speedModifier = 0.6f;
-                if (Projectile.Center.X < target.X)
+                if (Projectile.Center.X < targetPos.X)
                 {
                     Projectile.velocity.X += speedModifier;
                     if (Projectile.velocity.X < 0)
@@ -141,7 +126,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                     if (Projectile.velocity.X > 0)
                         Projectile.velocity.X -= speedModifier * 2;
                 }
-                if (Projectile.Center.Y < target.Y)
+                if (Projectile.Center.Y < targetPos.Y)
                 {
                     Projectile.velocity.Y += speedModifier;
                     if (Projectile.velocity.Y < 0)
@@ -153,103 +138,110 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                     if (Projectile.velocity.Y > 0)
                         Projectile.velocity.Y -= speedModifier * 2;
                 }
-                if (Math.Abs(Projectile.velocity.X) > 24)
+                if (MathF.Abs(Projectile.velocity.X) > 24)
                     Projectile.velocity.X = 24 * Math.Sign(Projectile.velocity.X);
-                if (Math.Abs(Projectile.velocity.Y) > 24)
+                if (MathF.Abs(Projectile.velocity.Y) > 24)
                     Projectile.velocity.Y = 24 * Math.Sign(Projectile.velocity.Y);
 
-                Projectile.rotation = Projectile.SafeDirectionTo(player.Center).ToRotation() - MathHelper.PiOver2;
+                // Face the player
+                Projectile.rotation = Projectile.SafeDirectionTo(target.Center).ToRotation() - MathHelper.PiOver2;
             }
-            else if (Projectile.ai[1] == 120)
+            else if (Timer == 120)
             {
-                Projectile.localAI[0] = player.Center.X;
-                Projectile.localAI[1] = player.Center.Y;
-                Projectile.Center = player.Center + Projectile.DirectionFrom(player.Center) * baseDistance;
+                // Store the player's center for the rest of the attack
+                CenterX = target.Center.X;
+                CenterY = target.Center.Y;
+
+                // Snap into position
+                Projectile.Center = target.Center + Projectile.DirectionFrom(target.Center) * BaseDistance;
                 Projectile.velocity = Vector2.Zero;
-                Projectile.netUpdate = true;
-                //goldScytheAngleOffset = Main.rand.NextFloat(MathHelper.TwoPi);
-                //cyanScytheAngleOffset = goldScytheAngleOffset + MathHelper.Pi + Main.rand.NextFloat(-MathHelper.PiOver2, MathHelper.PiOver2); //always somewhere in the opposite half
             }
-            else if (Projectile.ai[1] == 121) //make the golden sickles
+            // Make the golden sickles
+            else if (Timer == 121)
             {
+                int extraLifeTime = 180 + 30;
+
                 if (FargoSoulsUtil.HostCheck)
                 {
-                    SpawnProjectile(Projectile.Center - Projectile.velocity / 2);
+                    // Spawn sickle
+                    SpawnProjectile(target, Projectile.Center - Projectile.velocity / 2);
 
                     float accel = 0.025f;
-                    Vector2 target = new(Projectile.localAI[0], Projectile.localAI[1]); //+ 150f * Vector2.UnitX.RotatedBy(goldScytheAngleOffset);
-                    float angle = Projectile.SafeDirectionTo(target).ToRotation();
-                    int p = Projectile.NewProjectile(Terraria.Entity.InheritSource(Projectile), Projectile.Center, Vector2.Zero, ModContent.ProjectileType<MutantScythe2>(), Projectile.damage, 0, Main.myPlayer, accel, angle);
-                    if (p != Main.maxProjectiles)
-                        Main.projectile[p].timeLeft = Projectile.timeLeft + 180 + 30;
+                    Vector2 targetPos = new(CenterX, CenterY);
+                    float angle = Projectile.SafeDirectionTo(targetPos).ToRotation();
 
+                    // First set of sickles
+                    int p = Projectile.NewProjectile(Terraria.Entity.InheritSource(Projectile), Projectile.Center, Vector2.Zero, ModContent.ProjectileType<MutantSickleGold>(), Projectile.damage, 0, Main.myPlayer, accel, angle);
+                    if (p != Main.maxProjectiles)
+                        Main.projectile[p].timeLeft = Projectile.timeLeft + extraLifeTime;
+
+                    // Another set of sickles that comes at the end
                     if (WorldSavingSystem.MasochistModeReal)
                     {
-                        p = Projectile.NewProjectile(Terraria.Entity.InheritSource(Projectile), Projectile.Center, Vector2.Zero, ModContent.ProjectileType<MutantScythe2>(), Projectile.damage, 0, Main.myPlayer, accel, angle);
+                        p = Projectile.NewProjectile(Terraria.Entity.InheritSource(Projectile), Projectile.Center, Vector2.Zero, ModContent.ProjectileType<MutantSickleGold>(), Projectile.damage, 0, Main.myPlayer, accel, angle);
                         if (p != Main.maxProjectiles)
-                            Main.projectile[p].timeLeft = Projectile.timeLeft + 180 + 30 + 150;
+                            Main.projectile[p].timeLeft = Projectile.timeLeft + extraLifeTime + 150;
                     }
                 }
 
-                /*if (FargoSoulsUtil.HostCheck)
-                {
-                    SpawnProjectile(Projectile.Center);
-                    SpawnProjectile(Projectile.Center - Projectile.velocity / 2);
-                }*/
+                Projectile.velocity = DashSpeed * Projectile.SafeDirectionTo(new Vector2(CenterX, CenterY)).RotatedBy(MathHelper.ToRadians(DegreesOffset));
 
-                Projectile.velocity = dashSpeed * Projectile.SafeDirectionTo(new Vector2(Projectile.localAI[0], Projectile.localAI[1])).RotatedBy(MathHelper.ToRadians(degreesOffset));
-                Projectile.netUpdate = true;
+                // Rawr >.<
                 SoundEngine.PlaySound(SoundID.ForceRoarPitched, Projectile.Center);
             }
-            else if (Projectile.ai[1] < 120 + baseDistance / dashSpeed * 2)
+            else if (Timer < 120 + BaseDistance / DashSpeed * 2)
             {
+                // Eyes forward
                 Projectile.rotation = Projectile.velocity.ToRotation() - MathHelper.PiOver2;
 
+                // Sickles
                 if (FargoSoulsUtil.HostCheck)
                 {
-                    SpawnProjectile(Projectile.Center);
-                    SpawnProjectile(Projectile.Center - Projectile.velocity / 2);
+                    SpawnProjectile(target, Projectile.Center);
+                    SpawnProjectile(target, Projectile.Center - Projectile.velocity / 2);
                 }
             }
             else
             {
+                // Sickles
                 if (FargoSoulsUtil.HostCheck)
                 {
-                    SpawnProjectile(Projectile.Center);
-                    SpawnProjectile(Projectile.Center - Projectile.velocity / 2);
+                    SpawnProjectile(target, Projectile.Center);
+                    SpawnProjectile(target, Projectile.Center - Projectile.velocity / 2);
                 }
 
-                Projectile.ai[1] = 120;
+                Timer = 120;
             }
 
+            // Cycle frames
             if (++Projectile.frameCounter > 6)
             {
                 Projectile.frameCounter = 0;
                 if (++Projectile.frame >= Main.projFrames[Projectile.type])
-                    Projectile.frame = 0;
+                    Projectile.frame = 3;
             }
 
-            if (Projectile.frame < 3)
-                Projectile.frame = 3;
+            Timer++;
         }
 
         private void SpawnProjectile(Player player, Vector2 position)
         {
             float accel = 0.03f;
-
-            Vector2 target = new(Projectile.localAI[0], Projectile.localAI[1]);// + 150f * Vector2.UnitX.RotatedBy(cyanScytheAngleOffset);
+            Vector2 target = new(CenterX, CenterY);
             target += 180 * Projectile.SafeDirectionTo(target).RotatedBy(MathHelper.PiOver2);
-
             float angle = Projectile.SafeDirectionTo(target).ToRotation();
 
-            int p = Projectile.NewProjectile(Terraria.Entity.InheritSource(Projectile), position, Vector2.Zero, ModContent.ProjectileType<MutantScythe1>(), Projectile.damage, 0, Main.myPlayer, accel, angle);
+            // Spawn projectile
+            int p = Projectile.NewProjectile(Terraria.Entity.InheritSource(Projectile), position, Vector2.Zero, ModContent.ProjectileType<MutantSickleCyan>(), Projectile.damage, 0, Main.myPlayer, accel, angle);
             if (p != Main.maxProjectiles)
             {
-                Main.projectile[p].timeLeft = Projectile.timeLeft + 180 + 30 + 150; //+ 60 + 240;
+                Main.projectile[p].timeLeft = Projectile.timeLeft + 180 + 30 + 150;
+
+                // Exit earlier in maso
                 if (WorldSavingSystem.MasochistModeReal)
                     Main.projectile[p].timeLeft -= 30;
             }
-        };
+        }
 
         public override void OnHitPlayer(Player target, Player.HurtInfo info)
         {
@@ -266,15 +258,18 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
         public override void OnKill(int timeLeft)
         {
+            // Explode into dust
             for (int i = 0; i < 50; i++)
             {
-                int dust = Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, DustID.Blood, 0, 0, 0, default, 2f);
+                int dust = Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, DustID.Blood, Scale: 2f);
                 Main.dust[dust].noGravity = true;
                 Main.dust[dust].velocity *= 5f;
             }
 
-            Vector2 goreSpeed = Projectile.localAI[0] != 0 && Projectile.localAI[1] != 0 ?
-                dashSpeed / 4f * Projectile.SafeDirectionTo(new Vector2(Projectile.localAI[0], Projectile.localAI[1])).RotatedBy(MathHelper.ToRadians(degreesOffset)) : Vector2.Zero;
+            // Gores
+            Vector2 goreSpeed = CenterX != 0 && CenterY != 0
+                ? DashSpeed / 4f * Projectile.SafeDirectionTo(new Vector2(CenterX, CenterY)).RotatedBy(MathHelper.ToRadians(DegreesOffset))
+                : Vector2.Zero;
             for (int i = 0; i < 2; i++)
             {
                 if (!Main.dedServ)
@@ -288,33 +283,32 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
 
         public override bool PreDraw(ref Color lightColor)
         {
-            Texture2D texture2D13 = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value;
-            int num156 = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value.Height / Main.projFrames[Projectile.type]; //ypos of lower right corner of sprite to draw
-            int y3 = num156 * Projectile.frame; //ypos of upper left corner of sprite to draw
-            Rectangle rectangle = new(0, y3, texture2D13.Width, num156);
-            Vector2 origin2 = rectangle.Size() / 2f;
+            Texture2D tex = ModContent.Request<Texture2D>(Texture).Value;
+            int frameHeight = tex.Height / Main.projFrames[Projectile.type];
+            Rectangle rect = new(0, frameHeight * Projectile.frame, tex.Width, frameHeight);
+            Color baseColor = Projectile.GetAlpha(lightColor);
+            float scale = ((Main.mouseTextColor / 200f - 0.35f) * 0.3f + 0.9f) * Projectile.scale;
 
-            Color color26 = Projectile.GetAlpha(lightColor);
-
+            // Restart the spriteBatch for the afterimages
             Main.spriteBatch.End();
             Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Additive, Main.DefaultSamplerState, DepthStencilState.None, RasterizerState.CullCounterClockwise, null, Main.GameViewMatrix.ZoomMatrix);
 
-            float scale = (Main.mouseTextColor / 200f - 0.35f) * 0.3f + 0.9f;
-            scale *= Projectile.scale;
-
-            for (int i = 0; i < ProjectileID.Sets.TrailCacheLength[Projectile.type]; i++)
+            float trailCacheLength = ProjectileID.Sets.TrailCacheLength[Projectile.type];
+            for (int i = 0; i < (int)trailCacheLength; i++)
             {
-                Color color27 = color26 * (Projectile.ai[1] >= 120 ? 0.75f : 0.5f);
-                color27 *= (float)(ProjectileID.Sets.TrailCacheLength[Projectile.type] - i) / ProjectileID.Sets.TrailCacheLength[Projectile.type];
-                Vector2 value4 = Projectile.oldPos[i];
-                float num165 = Projectile.oldRot[i];
-                Main.EntitySpriteDraw(texture2D13, value4 + Projectile.Size / 2f - Main.screenPosition + new Vector2(0, Projectile.gfxOffY), new Microsoft.Xna.Framework.Rectangle?(rectangle), color27, num165, origin2, scale, SpriteEffects.None, 0);
+                float afterimageRatio = (trailCacheLength - i) / trailCacheLength;
+                Color afterimageColor = baseColor * afterimageRatio;
+
+                Main.spriteBatch.Draw(tex, Projectile.oldPos[i] + Projectile.Size / 2f - Main.screenPosition, rect,
+                    afterimageColor, Projectile.oldRot[i], rect.Size() / 2f, scale, SpriteEffects.None, 0);
             }
 
             Main.spriteBatch.End();
             Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, RasterizerState.CullCounterClockwise, null, Main.GameViewMatrix.ZoomMatrix);
 
-            Main.EntitySpriteDraw(texture2D13, Projectile.Center - Main.screenPosition + new Vector2(0f, Projectile.gfxOffY), new Microsoft.Xna.Framework.Rectangle?(rectangle), color26, Projectile.rotation, origin2, Projectile.scale, SpriteEffects.None, 0);
+            Main.spriteBatch.Draw(tex, Projectile.Center - Main.screenPosition, rect, baseColor,
+                Projectile.rotation, rect.Size() / 2f, scale, SpriteEffects.None, 0);
+            
             return false;
         }
     }

@@ -3,6 +3,7 @@ using FargowiltasSouls.Content.Buffs.Masomode;
 using FargowiltasSouls.Core.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Runtime.Intrinsics;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -83,7 +84,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
                 // Otherwise, just aim at the player
                 else
                 {
-                    Projectile.rotation = mutant.SafeDirectionTo(Main.player[mutant.target].Center).ToRotation();
+                    Projectile.rotation = mutant.SafeDirectionTo(Main.player[mutant.target].Center - Main.player[mutant.target].velocity.SafeNormalize(Vector2.Zero) * 10).ToRotation();
                 }
             }
             else

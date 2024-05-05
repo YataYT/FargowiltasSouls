@@ -111,7 +111,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
                 {
                     if (FargoSoulsUtil.HostCheck)
                         Projectile.NewProjectile(Terraria.Entity.InheritSource(Projectile), Projectile.Center, Vector2.Zero,
-                            ModContent.ProjectileType<MutantSphereSmall>(), Projectile.damage, 0f, Projectile.owner, Projectile.ai[0]);
+                            ModContent.ProjectileType<MutantSphereSmall>(), Projectile.damage, 0f, Projectile.owner, AI0);
                 }
             }
 

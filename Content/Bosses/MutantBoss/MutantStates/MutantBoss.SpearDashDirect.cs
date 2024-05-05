@@ -101,7 +101,8 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 NPC.velocity = NPC.DirectionTo(Target.Center + (IsPhaseOne ? Target.Velocity : Vector2.Zero)) * ((MasochistMode ? 45f : 30f) + additionalSpeedP2);
                 if (HostCheck)
                 {
-                    Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Zero, ModContent.ProjectileType<MutantSpearDash>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), 0f, Main.myPlayer, NPC.whoAmI);
+                    float spearAI = MasochistMode ? -1 : 0;
+                    Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Zero, ModContent.ProjectileType<MutantSpearDash>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), 0f, Main.myPlayer, NPC.whoAmI, spearAI);
                     if (MasochistMode || !IsPhaseOne) // Always summons deathrays in Masomode, only summons deathrays in P2 outside Maso
                     {
                         Projectile.NewProjectile(NPC.GetSource_FromThis(), NPC.Center, Vector2.Normalize(NPC.velocity), ModContent.ProjectileType<MutantDeathray>(), FargoSoulsUtil.ScaledProjectileDamage(NPC.damage), 0f, Main.myPlayer);

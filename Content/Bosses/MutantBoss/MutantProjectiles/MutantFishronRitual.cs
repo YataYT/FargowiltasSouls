@@ -69,7 +69,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
         public override void AI()
         {
             NPC npc = FargoSoulsUtil.NPCExists(Projectile.ai[0], ModContent.NPCType<MutantBoss>());
-            if (npc != null && npc.ai[0] == 34)
+            if (npc != null && npc.ai[1] == (int)MutantBoss.BehaviorStates.Nuke)
             {
                 Projectile.alpha -= 7;
                 Projectile.timeLeft = 300;

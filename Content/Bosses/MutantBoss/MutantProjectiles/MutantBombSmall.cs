@@ -26,9 +26,9 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
             if (Projectile.frame > 2 && Projectile.frame <= 4)
             {
                 Projectile.FargoSouls().GrazeCD = 1;
-                return false;
+                return true;
             }
-            return true;
+            return false;
         }
 
         public override void OnSpawn(IEntitySource source)
@@ -51,7 +51,7 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss.MutantProjectiles
             Rectangle rect = new(0, frameHeight * Projectile.frame, tex.Width, frameHeight);
 
             Main.spriteBatch.Draw(tex, Projectile.Center - Main.screenPosition, rect, Projectile.GetAlpha(lightColor) with { A = 210 },
-                Projectile.rotation, rect.Size() / 2f, Projectile.scale * 3f, SpriteEffects.None, 0f);
+                Projectile.rotation, rect.Size() / 2f, Projectile.scale * 4f, SpriteEffects.None, 0f);
 
             return false;
         }

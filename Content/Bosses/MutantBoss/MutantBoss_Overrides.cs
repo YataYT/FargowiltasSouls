@@ -9,6 +9,7 @@ using FargowiltasSouls.Content.Items.Materials;
 using FargowiltasSouls.Content.Items.Pets;
 using FargowiltasSouls.Content.Items.Placables.Relics;
 using FargowiltasSouls.Content.Items.Placables.Trophies;
+using FargowiltasSouls.Content.Items.Summons;
 using FargowiltasSouls.Content.Sky;
 using FargowiltasSouls.Core.Globals;
 using FargowiltasSouls.Core.ItemDropRules.Conditions;
@@ -245,6 +246,8 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
             if (invalidTarget)
                 NPC.TargetClosest(false);
 
+            if (NPC.life < 1)
+                NPC.life = 1;
             
             EModeGlobalNPC.mutantBoss = NPC.whoAmI;
 
@@ -269,6 +272,25 @@ namespace FargowiltasSouls.Content.Bosses.MutantBoss
                 Main.maxRaining = 0;
 
                 Main.bloodMoon = false;
+            }
+
+            // Drop summon
+            if (EternityMode && WorldSavingSystem.DownedAbom && !WorldSavingSystem.DownedMutant && HostCheck && NPC.HasPlayerTarget && !DroppedSummon)
+            {
+                Item.NewItem(NPC.GetSource_Loot(), Player.Hitbox, ModContent.ItemType<MutantsCurse>());
+                DroppedSummon = true;
+            }
+
+            // Update this later (Desperation phase drain)
+            if (CurrentPhase == 3 && NPC.life > 1 && DoLifeDrain)
+            {
+                int time = 480 + 240 + 420 + 480 + 1020 - 60;
+                if (MasochistMode)
+                    time = Main.getGoodWorld ? 5000 : 4350;
+                int drain = NPC.lifeMax / time;
+                NPC.life -= drain;
+                if (NPC.life < 1)
+                    NPC.life = 1;
             }
 
             // Refil the state machine if it's empty
